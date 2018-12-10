@@ -1,0 +1,474 @@
+struct ControlData
+(
+		public
+			name,
+			type,
+			caption = unsupplied,
+			pos = unsupplied,
+			offset = unsupplied,
+			width = unsupplied,
+			height = unsupplied,
+			enabled = true,
+			events = unsupplied,
+			tooltip = unsupplied,
+			sParams = unsupplied
+)
+struct methodData
+(
+	method,
+	rParams = unsupplied,
+ 	sParams  = unsupplied
+)
+struct FunctionData
+(
+	name,
+	args = unsupplied,
+	methods
+)
+struct eventData
+(
+	type,
+	method = unsupplied
+)
+struct sPData
+(
+	key,
+	value,
+	IsString = true
+)
+
+fn qtString val = (return ("\""+val+"\""))
+fn CheckValidUIControlName name = (
+	numbers = "0123456789"
+	for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
+-- 	invalidUIName " :;'@#~[{}]|!£$%^&*()-=+\\,<.>//?";
+	name =  substituteString name " " "_";
+	name =  substituteString name ":" "Cl";
+	name =  substituteString name ";" "sm"
+	name =  substituteString name "'" "sq"
+	name =  substituteString name "@" "ms"
+	name =  substituteString name "#" "hs"
+	name =  substituteString name "~" "td"
+	name =  substituteString name "[" "osb"
+	name =  substituteString name "{" "ocb"
+	name =  substituteString name "}" "ccb"
+	name =  substituteString name "]" "csb"
+	name =  substituteString name "|" "pp"
+	name =  substituteString name "!" "ex"
+	name =  substituteString name "£" "pd"
+	name =  substituteString name "$" "dl"
+	name =  substituteString name "%" "pc"
+	name =  substituteString name "^" "or"
+	name =  substituteString name "&" "ad"
+	name =  substituteString name "*" "st"
+	name =  substituteString name "(" "bk"
+	name =  substituteString name ")" "bk"
+	name =  substituteString name "-" "ms"
+	name =  substituteString name "=" "eq"
+	name =  substituteString name "+" "ps"
+	name =  substituteString name "\\" "sl"
+	name =  substituteString name "," "cm"
+	name =  substituteString name "<" "lt"
+	name =  substituteString name "." "dt"
+	name =  substituteString name ">" "mt"
+	name =  substituteString name "//" "sl"
+	name =  substituteString name "?" "qm"
+	name =  substituteString name "\"" "qt"
+	return name;
+)
+Global RolloutEX = struct RolloutEX
+(
+	public
+		name,
+		width, 
+		height,
+		caption = unsupplied,		
+	private
+		ControlPosY = 8,
+		str ="",
+	fn RemoveParentheses val =( return (substituteString (val as string) "()" "")),
+	fn detectArray &result target method = (
+		if ((classOf target) == Array)then(
+			for val in target do (
+				result += (method val)
+			)
+		)else(
+			result += (method target)
+		)
+	),
+	fn DetectValue val = (
+		result = val as string;
+		if (classof val == string)do ( result = (qtString val) )
+		return (" "+result);
+	),
+	fn detectSPData val =(
+		result = "";
+		if (classof val == sPData) then (
+			curvalue = val.value as String
+			if (val.IsString) do (curvalue = (qtString curvalue))
+			result = " "+ val.key + curvalue
+		)else(
+			messageBox "The Property of MethodData Named sParams should be sPData"
+		)
+		return result;
+	),
+	fn baseControl name type pos width height enabled caption: tooltip: offset: across: sParams: = 
+	(
+		if (caption == unsupplied ) then (caption = name	)else(caption = substituteString caption "\"" "\\\"";)
+		name = CheckValidUIControlName name;
+		str += "\n"+type+" "+ name +" "
+		if (type != #radiobuttons )do (str += (qtString caption) )
+		
+		if pos != unsupplied do (
+			if (pos.y == 0)do(pos.y = ControlPosY);
+			if (type == #editText) do ( pos.y +=2)
+			if (type == #radiobuttons) do ( pos.y +=3)
+			str +=" pos:["+(pos.x as String)+","+(pos.y as String)+"]"
+		)
+		if width != unsupplied do (	str +=" width:"+(width as String))
+		if height != unsupplied do (str +=" height:"+(height as String))
+		if tooltip != unsupplied do (str +=" tooltip:"+(qtString tooltip)	)
+		if enabled == false do (str +=" enabled:false")
+		if (offset != unsupplied) do (str +=" offset:"+(offset as String))
+		if (across  != unsupplied) do (str +=" across:"+(across as String))
+		
+		if (sParams  != unsupplied) do (
+			detectArray &str sParams detectSPData
+		)
+		
+	),
+	fn baseEvent name type method = 
+	(
+		name = CheckValidUIControlName name;
+		if (method != unsupplied) do (
+			executeMethod = (method as string);
+			if (classof method == methodData) do (
+				executeMethod = (method as string);
+				if (method.rParams != unsupplied or method.sParams != unsupplied) do (
+					executeMethod = (RemoveParentheses method.method)
+					detectArray &executeMethod method.rParams DetectValue
+					detectArray &executeMethod method.sParams detectSPData
+				)
+			)
+			eventName = (type as string);
+			if (type == #picked or type == #changed or type == #rolledUp or type == #selected or type == #moved) do (
+				eventName = (type as string) +" val";
+				if (classof method != String)do(
+					executeMethod = (RemoveParentheses method)+" val:val"
+				)
+			)
+			
+			str += "\non " + name  + " " + eventName +" do( "+executeMethod+" )"
+		)
+	),
+	public
+	fn Init = 
+	(
+		if (caption == unsupplied) do ( caption = (qtString name))
+		if (width == undefined)do (width = 100)
+		if (height == undefined)do (height = 100)
+		declareName = CheckValidUIControlName name;
+		str = "try(DestroyDialog "+ declareName+")catch()"
+		str +="\n"
+		str += ("rollout " + declareName +" "+ caption + " width:"+(width as String)+" height:" + (height as String)+ "(\n")
+	),
+	fn AddControl name type pos: width: height: enabled:true caption: visible: across: offset: sParams: =
+	(
+		baseControl name type pos width height enabled caption:caption visible:visible across:across offset:offset sParams:sParams 
+	),
+	fn AddEvent name type method  =
+	(
+		baseEvent name type method
+	),
+	fn AddParameter name value: = (
+		str +="\nLocal "+(CheckValidUIControlName name) 
+		if (value != unsupplied)do(str += " = "+(DetectValue value))
+	),
+	fn AddFunction name method args: =
+	(
+		str +="\nfn " + (CheckValidUIControlName name)
+		if (args!= unsupplied)do(str += " "+args)
+		str += " = (\n"+method+"\n)"
+	),
+	fn  HorizontalComposition controls pos = 
+	(
+		curPosX = pos.x;
+		for i = 1 to controls.count do (			
+			if (controls[i].offset != unsupplied)do(curPosX+=controls[i].offset.x)
+			curPos = [curPosX,pos.y]
+			curWidth = (this.width/controls.count);
+			if (controls[i].width != unsupplied) do ( curWidth = controls[i].width) 
+			curPosX += curWidth
+			
+			enable = controls[i].enabled
+			baseControl controls[i].name controls[i].type curPos curWidth controls[i].height controls[i].enabled caption:controls[i].caption tooltip:controls[i].tooltip
+			if (controls[i].offset != unsupplied)do(curPosX-=controls[i].offset.x)
+			if (controls[i].sParams != unsupplied) do(
+				sp = ""
+				detectArray &sp controls[i].sParams detectSPData
+				str += (RemoveParentheses sp)
+			)
+			if (controls[i].events != unsupplied) do(
+				if (classof controls[i].events == Array)then(
+					for e in controls[i].events do (
+						baseEvent controls[i].name e.type e.method
+					)
+				)else if (classof controls[i].events == eventData)then(
+					baseEvent controls[i].name controls[i].events.type controls[i].events.method
+				)else(
+					messageBox "The Property of ControlData Named events should be EventData"
+				)
+			)
+			
+		)
+	),
+	fn Button name pos: width: height: enabled:true Pressed: RightClick: caption: sParams: = 
+	(
+		baseControl name #button pos width height enabled caption:caption sParams:sParams
+		baseEvent name #pressed pressed
+		baseEvent name #rightclick RightClick
+	),
+	fn pickbutton name pos: width: height: filter: picked: rightclick: enabled:true caption: =
+	(
+		baseControl name #pickbutton pos width height enabled caption:caption
+		if filter != unsupplied do (		str += " filter:"+(RemoveParentheses filter)		)
+		baseEvent name #picked picked
+		baseEvent name #rightclick rightclick
+	),
+	fn editText name pos: width: height: text: changed: enabled:true caption: = 
+	(
+		baseControl name #editText pos width height enabled caption:caption
+		if text != unsupplied do (str +=" text:"+(qtString text))
+		baseEvent name #changed changed
+	),
+	fn newLine amount:22 =
+	(
+		ControlPosY += amount;
+	),
+	fn Start targetRollout: mode:createDialog = 
+	(
+		str += "\n)\n"
+		case mode of (
+			createDialog:(mode (execute str) )
+			addRollout:(mode (execute str) targetRollout)
+			AddSubRollout:(mode targetRollout (execute str))			
+		)
+--  		print str
+		free str
+	)
+)
+fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300 RolledUpEvent: name:"Sliders" caption: rolloutParameter: OnChanged: RightClick: Buttondown: = (
+	try(for rol in targetSubRollout.rollouts do (removesubrollout targetSubRollout rol))catch(print "sliders did not exist")
+	if (List.count > 0)then(
+		name = (CheckValidUIControlName name)
+		SlidersRol = RolloutEX name:name caption:caption width:(targetSubRollout.width+50)
+		SlidersRol.Init()
+		SlidersRol.AddParameter "VisibleCount" value:0
+		SlidersRol.AddParameter "Elements" value:#()
+		SlidersRol.AddParameter "IsSlidersEnabled" value:true
+		sortMethods = " firstIndex = undefined \n"+
+		"if (SearchText != \"\" )do( \n"+
+		"	for i = 1 to Elements.count do (\n"+
+		"		if (findstring SearchText[1] Elements[i].caption[1]) != undefined do(firstIndex = i;exit)"+
+		"	)\n"+
+		" )\n"+
+		"VisibleCount = 0 \n"+
+		"for i = 1 to Elements.count do (\n"+
+		"	Index = i \n"+
+		"	if (firstIndex != undefined)do( \n"+
+		"		Index = i +(firstIndex-1) \n"+
+		"		if (Index  > Elements.count )do(Index = Index-Elements.count) \n"+					
+		"	)\n"+
+		"	ele = Elements[Index] \n"+
+		"	if ((findString ele.caption SearchText) == undefined)then("+"\n"+
+		"		ele.visible = false"+"\n"+
+		"	)else(\n"+
+		"		ele.visible = true"+"\n"+
+		"		ele.pos.y = 23+(55*VisibleCount)\n"+
+		"		VisibleCount = VisibleCount+1"+"\n"+
+		"	)\n"+
+		" )\n"+
+		"sliderUIHeight = 23+(VisibleCount*58)\n"+
+		"Sliders.height = sliderUIHeight;"
+		
+		SlidersRol.AddFunction "SortSliders" sortMethods args:("SearchText:\"\"")			
+		
+		SlidersRol.AddFunction "SwitchSliders" (
+			"IsSlidersEnabled=not IsSlidersEnabled"+
+			"\nfor ele in Elements do (ele.enabled = IsSlidersEnabled)"
+		)
+		SlidersRol.AddFunction "ResetSliders" ("for ele in Elements do (ele.value = 0)")
+		
+		SlidersRol.AddFunction  "ChangeTargetSlider" (
+			"	next = current\n"+
+			"	if (IsNext)then(if (current+1 <= Elements.count)then(next = current+1)else(next = 1)\n"+
+			"	)else(if (current-1 > 0)then(next = current-1)else(next = Elements.count))\n"+
+			"	next"
+		) args:"current IsNext"
+		
+		SlidersRol.AddFunction  "IsolateSlider" (
+			"if (VisibleCount !=0)do(\n"+
+			"	current = ChangeTargetSlider current IsNext\n"+
+			"	while ( Elements[current].visible == false)do(current = ChangeTargetSlider current IsNext)\n"+
+			"	for i = 1 to Elements.count do (\n"+
+			"		val = 0\n"+
+			" 		if (i==current)then(val = 100)else(val = 0)\n"+
+			"		Elements[i].value = val\n"+
+			"		"+OnChanged+" i val\n"+			
+			"	)\n"+
+			"	"+Buttondown+" current\n"+
+-- 			"	scrollPosNormalized = "+name+".scrollpos as float/(Sliders.height-"+height as string+"+1)\n"+
+-- 			"	NHeight = "+height as string+"*scrollPosNormalized\n"+			
+-- 			"	print ("+name+".scrollpos as string + \"		\"+ Elements[current].pos.y as string  + \"		\"+ (Sliders.height-"+height as string+"+1) as string)\n"+
+--  			"	if (Elements[current].pos.y >("+name+".scrollpos+("+height as string+"-NHeight))) do ("+name+".scrollpos = Elements[current].pos.y+(NHeight/2))\n"+
+-- 			"	if (Elements[current].pos.y <("+name+".scrollpos-NHeight)) do ("+name+".scrollpos = Elements[current].pos.y-("+height as string+"-NHeight))\n"+
+			")\n"+
+			"current"
+		) args:"current IsNext"
+		
+		InitializeValueStr = ""
+		InitializeValueStr += "\nElements = #()"
+		if (rolloutParameter!=unsupplied)do(
+			InitializeValueStr += "\n"+rolloutParameter+" = "+ name
+		)
+		if (RolledUpEvent != unsupplied)do(
+			SlidersRol.AddEvent name #rolledUp RolledUpEvent
+			InitializeValueStr +=  (substituteString (RolledUpEvent as string) "()" "") + " val:true"
+		)		
+		for i = 1 to  List.count do (
+			strIndex = " "+(i as String)
+			ele = (CheckValidUIControlName List[i]);
+			SlidersRol.AddControl ele #slider caption:List[i]
+			if (OnChanged != unsupplied)do(
+				SlidersRol.AddEvent ele #changed (OnChanged+strIndex+" val;")
+			)
+			if (RightClick != unsupplied)do(
+				SlidersRol.AddEvent ele #rightclick (RightClick+strIndex+" 0;"+ele+".value = 0;")
+			)
+			if (Buttondown != unsupplied)do(
+				SlidersRol.AddEvent ele #buttondown (	Buttondown+strIndex)
+			)			
+			
+			InitializeValueStr += "\n"+ele+".value = "+(ListValues[i] as String)
+			InitializeValueStr += "\nappend Elements "+ele
+		)
+		InitializeValueStr += "\nSortSliders SearchText:"+(qtString SearchText)		
+		targetSubRollout.height = height;
+		SlidersRol.AddEvent name #open InitializeValueStr
+		SlidersRol.Start mode:AddSubRollout targetRollout:targetSubRollout
+	)
+)
+Global SearchableSliders = SearchableSliders;
+struct MessageBoxEx
+ (
+	 curToolTips,
+	 curType,
+	 IsYesNoCancel,
+	 curDoNotShowThisAgainChecked,
+	 --Usage		MessageBoxEx.InputBox.GetResult #text ToolTips:"Input text" yesNoCancel:true
+	InputBox = rollout InputBox "Type-IN-Text"  width:300 height:80
+	(
+		local result
+		Label ToolTipsLabel "Input Some " width:300 pos:[13,10]
+		Edittext TextFeild "Text:" pos:[13,30] visible:false
+		Spinner X "X:" across:3 width:60 align:#center pos:[13,30]
+		Spinner Y "Y:" width:60 pos:[83,30] 
+		Spinner Z "Z:" width:60 pos:[153,30] visible:true
+		Spinner W "W:" width:60 pos:[233,30] visible:true
+		Button image "image" pos:[13,30] images: #("Error_i.bmp", "", 1, 1, 1, 1, 1,true) visible:false enabled:false border:false
+		checkbox DoNotShowThisAgain "Don't show this warning again." pos:[50,30] visible:false
+		button cancel "Cancel" width:60 align:#right offset:[0,2]
+		on cancel pressed do (destroyDialog MessageBoxEx.InputBox;)
+		button refuse "NO" width:60 pos:[cancel.pos.x-61,cancel.pos.y]
+		button permit "OK"  width:60 pos:[refuse.pos.x-61,refuse.pos.y]
+
+		fn GetResult Type ToolTips: yesNoCancel: DoNotShowThisAgainChecked: = (
+			destroyDialog MessageBoxEx.InputBox
+			MessageBoxEx.curToolTips = ToolTips;
+			MessageBoxEx.curType = type;
+			MessageBoxEx.IsYesNoCancel  = yesNoCancel;
+			MessageBoxEx.curDoNotShowThisAgainChecked = DoNotShowThisAgainChecked;
+			createDialog MessageBoxEx.InputBox modal:true style:#(#style_sunkenedge) 
+			result -- only put it here if the dialog is modal
+		)
+ 		on InputBox open do
+ 		(
+			if (MessageBoxEx.curToolTips!=unsupplied)do(ToolTipsLabel.text = MessageBoxEx.curToolTips;)			
+			case MessageBoxEx.curType of(
+				#text:(
+					TextFeild.visible  = true;
+					X.visible = false;
+					Y.visible = false;
+					Z.visible = false;
+					W.visible = false;
+					setFocus TextFeild
+				)
+				#DoNotShowThisAgain:(
+					DoNotShowThisAgain.visible  = true;
+					DoNotShowThisAgain.checked = MessageBoxEx.curDoNotShowThisAgainChecked;
+					image.visible  = true;
+					TextFeild.visible  = false;
+					X.visible = false;
+					Y.visible = false;
+					Z.visible = false;
+					W.visible = false;
+				)
+				#Point2:(
+					TextFeild.visible  = false;
+					X.visible = true;	X.pos.x += 60;
+					Y.visible = true;	Y.pos.x += 60;
+					Z.visible = false;
+					W.visible = false;
+				)
+				#Point3:(
+					TextFeild.visible  = false;
+					X.visible = true;	X.pos.x += 30;
+					Y.visible = true;	Y.pos.x += 30;
+					Z.visible = true;	Z.pos.x += 30;
+					W.visible = false;
+				)
+				#Point4:(
+					TextFeild.visible  = false;
+					X.visible = true;
+					Y.visible = true;
+					Z.visible = true;
+					W.visible = true;
+				)
+			)
+			if (MessageBoxEx.IsYesNoCancel != true)do(
+				cancel.visible = false;
+				permit.pos.x+=61;
+				refuse.pos.x+=61;
+
+			)
+ 		)
+		fn Done OKorNO: = (
+			if (MessageBoxEx.IsYesNoCancel == true)then(
+				Case MessageBoxEx.curType of(
+					#text:(result = (#( OKorNO,TextFeild.text)) )
+					#DoNotShowThisAgain:(result = #(OKorNO,DoNotShowThisAgain.checked))
+					#Point2:(result = #(OKorNO,[X.value,Y.value]) )
+					#Point3:(result = #(OKorNO,[X.value,Y.value,Z.value]) )
+					#Point4:(result = #(OKorNO,[X.value,Y.value,Z.value,W.value]) )
+				)
+			)else(
+				if (MessageBoxEx.curType == #DoNotShowThisAgain)then(
+					result = #(OKorNO,DoNotShowThisAgain.checked)
+				)else(
+					if (OKorNO)do(
+						case MessageBoxEx.curType of(
+							#text:(	result = TextFeild.text;	)
+							#Point2:(result = [X.value,Y.value] )
+							#Point3:(result = [X.value,Y.value,Z.value] )
+							#Point4:(result = [X.value,Y.value,Z.value,W.value] )
+						)
+					)
+				)
+			)
+			destroyDialog MessageBoxEx.InputBox;
+		)
+ 		on permit pressed do (Done OKorNO:true;)
+		on refuse pressed do (Done OKorNO:false;)		
+	)
+ )
+Global MessageBoxEx = MessageBoxEx();
