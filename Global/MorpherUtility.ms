@@ -269,7 +269,7 @@ fn SnapShotToMorpherChannel _morpher refObj _channel Keyframes: MorpherChannelTa
 )
 fn testChannlAnimation Keyframes: = (
 	target = at time 0 snapshot $
-	addModifier target (Morpher())  
+	addModifier target (Morpher())
 	redrawViews()
 	SnapShotToMorpherChannel target.modifiers[morpher] $ 1 Keyframes:Keyframes	
 	gc()

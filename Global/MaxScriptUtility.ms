@@ -1,16 +1,3 @@
-fn getFilesRecursive folder pattern childF =
-(
-	my_files = #()
-	join my_files (getFiles (folder +"\\"+ pattern))
-	if childF do(
-		dir_array = GetDirectories (folder+"/*")
-		for d in dir_array do
-			join dir_array (GetDirectories (d+"/*"))
-		for f in dir_array do
-			join my_files (getFiles (f + pattern))
-	)
-	my_files
-)
 fn selectRoot = (
 	if (selection.count > 0) do (
 		rootObjects = #()

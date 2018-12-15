@@ -289,7 +289,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		"	)\n"+
 		" )\n"+
 		"sliderUIHeight = 23+(VisibleCount*58)\n"+
-		"Sliders.height = sliderUIHeight;"
+		name+".height = sliderUIHeight;"
 		
 		SlidersRol.AddFunction "SortSliders" sortMethods args:("SearchText:\"\"")			
 		
