@@ -7,37 +7,22 @@ fn selectRoot = (
 		select rootObjects
 	)
 )
-fn PopupInfo target: = (
-	if (target == unsupplied)do (target = "log nothing")
-	messageBox (target as string)
-)
-fn PrintInfo target = (
-	if (target == unsupplied)do (target = "log nothing")
-	Print (target as string)
-)
-fn stringValueFeild val = (
-	result = undefined;
-	strArray = FilterString val "[,]"
-	if (classof strArray) == Array do (
-		floatArray =#()
-		for i=1 to strArray.count do (
-			floatArray[i] = strArray[i] as float;
-			if (floatArray[i] == undefined)do(
-				print (val + " has invalid value")
-				return undefined;
-			)
-		)
-		if (floatArray.count > 1)do(
-			if (floatArray.count == 2)then(
-				result =  [floatArray[1],floatArray[2]]
-			)else if (floatArray.count == 3)then(
-				result = [floatArray[1],floatArray[2],floatArray[3]]
-			)else if (floatArray.count == 4)then(
-				result = [floatArray[1],floatArray[2],floatArray[3],floatArray[4]]
-			)
+fn PopupInfo target: = (messageBox (target as string))
+fn PrintInfo target = (target as string)
+fn ConvertStringValue txt type = (
+	result = try(execute(txt))catch()
+	if (classof result != type)do(
+		case type of (
+			Float:(result = 0.0f)
+			Integer:(result = 0)
+			Array:(result = #())
+			Point2:(result = [0,0])
+			Point3:(result = [0,0,0])
+			Point4:(result = [0,0,0,0])
+			Color:(result = [0,0,0,0])
 		)
 	)
-	return result;
+	result
 )
 fn Approximately val1 val2 round = (return (abs (val1 - val2)) <= round;)
 fn ClosePopupDialogByName name = (
@@ -51,10 +36,7 @@ fn ClosePopupDialogByName name = (
 			)
 		)
 	)
-	if ( target != undefined)do(
-		UIAccessor.CloseDialog target;
-	)
-	
+	if ( target != undefined)do(UIAccessor.CloseDialog target)
 )
 fn ClearModifiersFromSelection = (
 	for sel in (getCurrentSelection()) do (
