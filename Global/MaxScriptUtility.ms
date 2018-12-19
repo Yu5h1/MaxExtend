@@ -1,9 +1,7 @@
 fn selectRoot = (
 	if (selection.count > 0) do (
 		rootObjects = #()
-		for obj in selection do (
-			if (obj.parent == undefined)do (append rootObjects obj)
-		)
+		for obj in getCurrentSelection() do (if (obj.parent == undefined)do (append rootObjects obj))
 		select rootObjects
 	)
 )
@@ -30,9 +28,7 @@ fn ClosePopupDialogByName name = (
 	for d in (uiaccessor.getpopupdialogs()) do (
 		for p in (windows.getHWNDData d)do(
 			if (classof p == string )do(
-				if (matchpattern p pattern:name )do(
-					target = d
-				)
+				if (matchpattern p pattern:name )do(	target = d	)
 			)
 		)
 	)
