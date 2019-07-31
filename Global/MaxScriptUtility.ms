@@ -16,7 +16,8 @@ fn GetFileWithPatterns Dir searchPatterns = (
 	if (classof searchPatterns != Array) do (searchPatterns = #(searchPatterns))
 	results = #()
 	for p in searchPatterns do (
-		if (findString p "*." == undefined) do (p = "*."+p )
+		if (p[1] == ".")then( p = "*"+p )
+		else if (findString p "*." == undefined) then ( p = "*."+p )
 		join results (getFiles (Dir +"\\"+ p))	
 	)
 	results
@@ -26,7 +27,7 @@ fn getFilesRecursive folderPath searchPattern:"*" Recursively:false =
 	searchPatterns = #()
 	my_files = #()
 	
-	if (classOf searchPattern == Array) then (	for p in searchPattern do (	append searchPatterns p	)	)
+	if (classOf searchPattern == Array) then (	join searchPatterns searchPattern)
 	else(	append searchPatterns searchPattern	)		
 	join my_files (GetFileWithPatterns folderPath searchPatterns)		
 	if Recursively do(
