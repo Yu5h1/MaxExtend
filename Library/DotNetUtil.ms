@@ -1,0 +1,1 @@
+fn SolidBrush colorParm =  (dotNetObject "System.Drawing.SolidBrush" colorParm)
