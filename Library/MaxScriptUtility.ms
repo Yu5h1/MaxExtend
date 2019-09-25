@@ -1,17 +1,3 @@
-fn LoadDll dllpath = (
-	LoadSucceed = (try(dotnet.loadAssembly dllpath)catch(false)) != false 
-	loadinfo = "LoadAssembly ["+dllpath+"]\n"
-	if (LoadSucceed)then( loadinfo = loadinfo + "Succeed ! ")else (loadinfo = loadinfo + " failed... ")			
-	print loadinfo
-	LoadSucceed
-)
-fn GetDotNetClass dllpath classname = (
-	result = dotNetClass classname
-	if (result  == undefined) do (
-		if (LoadDll dllpath)do(	 result = dotNetClass classname	)
-	)
-	result
-)
 fn GetFileWithPatterns Dir searchPatterns = (
 	if (classof searchPatterns != Array) do (searchPatterns = #(searchPatterns))
 	results = #()
@@ -41,7 +27,6 @@ fn getFilesRecursive folderPath searchPattern:"*" Recursively:false =
 	)
 	my_files
 )
-
 fn selectRoot = (
 	if (selection.count > 0) do (
 		rootObjects = #()
