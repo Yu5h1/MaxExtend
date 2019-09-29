@@ -4,7 +4,7 @@ fn GetFileWithPatterns Dir searchPatterns = (
 	for p in searchPatterns do (
 		if (p[1] == ".")then( p = "*"+p )
 		else if (findString p "*." == undefined) then ( p = "*."+p )
-		join results (getFiles (Dir +"\\"+ p))	
+		join results (getFiles (Dir +"\\"+ p))
 	)
 	results
 )

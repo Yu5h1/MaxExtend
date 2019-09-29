@@ -1,11 +1,15 @@
 Enum = dotNetClass "System.Enum"
-fn LoadDll dllpath = (
+Environment = dotnetclass "System.Environment"
+fn LoadDll dllpath prompt:true = (
 	LoadSucceed = classof (try(dotnet.loadAssembly dllpath)catch(false)) == dotNetObject
 	if (LoadSucceed)then( print ("LoadAssembly ["+(dllpath as string)+"] Succeed ! ") )
-	else ( messageBox ("LoadAssembly ["+(dllpath as string)+"] failed... ") )
+	else (
+		warnningInfo = "LoadAssembly ["+(dllpath as string)+"] failed... "
+		if (prompt)then(messageBox warnningInfo)else(print warnningInfo)
+	)
 	LoadSucceed
 )
-fn ScanningLoadDll name curLocation: previouseLocation: searchpattern:"*" Recursively:false scanning:false = ( result = undefined
+fn ScanningLoadDll name curLocation: previouseLocation: searchpattern:"*" Recursively:false scanning:false prompt:true = ( result = undefined
 	if (curLocation == unsupplied)do (curLocation = getfilenamepath (getThisScriptFilename()) )
 	if (curLocation[curLocation.count] != "\\" ) do ( curLocation += "\\")		
 	if ( doesFileExist (curLocation + name) )then( result = curLocation + name )else(
@@ -21,18 +25,37 @@ fn ScanningLoadDll name curLocation: previouseLocation: searchpattern:"*" Recurs
 			)
 		)
 	)
-	if (scanning == false and result != undefined )do( result = LoadDll result )
-	result
-)
-getfilenamepath (getThisScriptFilename()) +"splitimage.dll"
-fn LoadDotNetClass classname DllName: curLocation: = (
-	result = dotNetClass classname
-	if (result  == undefined) do (
-		if (DllName == unsupplied)do(DllName = (filterstring classname ".")[1] +".dll")
-		print dllName
-		if (ScanningLoadDll dllName curLocation:curLocation )do( result = dotNetClass classname ) 
+	if (scanning == false )do(
+		if (result != undefined )then( result = LoadDll result prompt:prompt )
+		else(result = false)	
 	)
 	result
+)
+fn LoadDotNetClass classname DllName: curLocation: prompt:true = (
+	result = dotNetClass classname
+	if (result  == undefined) do (
+		if (DllName == unsupplied)do(DllName = (filterstring classname ".")[1] +".dll")		
+		if (ScanningLoadDll dllName curLocation:curLocation prompt:prompt )do( result = dotNetClass classname ) 
+	)
+	result
+)
+fn ShowSelectFilesDialog title Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: = (	
+	if (FileOK != unsupplied)do(
+		DialogClass = "System.Windows.Forms.OpenFileDialog"
+		if (DialogStyle == #Save)do( DialogClass = "System.Windows.Forms.SaveFileDialog" )
+		theDialog = dotNetObject DialogClass			
+		theDialog.title = title
+		theDialog.CheckFileExists = ShowCheckWarrn
+		theDialog.CheckPathExists = ShowCheckWarrn
+		theDialog.RestoreDirectory = false
+		AdditionalfilterString = ""
+		for item in types do ( AdditionalfilterString += (toUpper item) + " Files (*."+ (toLower item)+")|*."+(toLower item)+"|" )
+		theDialog.fileName = getfilenamefile XMLDocPath
+		theDialog.Filter = AdditionalfilterString+"All Files (*.*)|*.*"
+		theDialog.FilterIndex = 0
+		dotNet.addEventHandler theDialog "FileOK" FileOK
+		theDialog.showDialog()
+	)
 )
 SystemSounds = dotnetclass "System.Media.SystemSounds"
 
@@ -103,5 +126,10 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 	)
 )
 fn SelectFolderDialog hwnd initPath = (
-	(LoadDotNetClass "SelectionDialogUtility.SelectFolderDialog").selectfolder (dnIntPtr hwnd) initPath
+	result = ""
+	SelectionDialogClass = LoadDotNetClass "SelectionDialogUtility.SelectFolderDialog" prompt:false
+	if (SelectionDialogClass != undefined)then( result = SelectionDialogClass.selectfolder (dnIntPtr hwnd) initPath )
+	else (result = getSavePath caption:"Select Folder" initialDir:initPath )
+	if (result == undefined)do(result = "")
+	result
 )
