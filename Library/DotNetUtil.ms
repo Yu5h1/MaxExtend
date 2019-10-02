@@ -39,18 +39,19 @@ fn LoadDotNetClass classname DllName: curLocation: prompt:true = (
 	)
 	result
 )
-fn ShowSelectFilesDialog title Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: = (	
+fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: = (
 	if (FileOK != unsupplied)do(
 		DialogClass = "System.Windows.Forms.OpenFileDialog"
 		if (DialogStyle == #Save)do( DialogClass = "System.Windows.Forms.SaveFileDialog" )
 		theDialog = dotNetObject DialogClass			
 		theDialog.title = title
+		theDialog.InitialDirectory = getfilenamepath InitialPath
 		theDialog.CheckFileExists = ShowCheckWarrn
 		theDialog.CheckPathExists = ShowCheckWarrn
 		theDialog.RestoreDirectory = false
 		AdditionalfilterString = ""
 		for item in types do ( AdditionalfilterString += (toUpper item) + " Files (*."+ (toLower item)+")|*."+(toLower item)+"|" )
-		theDialog.fileName = getfilenamefile XMLDocPath
+		theDialog.fileName = getfilenamefile InitialPath
 		theDialog.Filter = AdditionalfilterString+"All Files (*.*)|*.*"
 		theDialog.FilterIndex = 0
 		dotNet.addEventHandler theDialog "FileOK" FileOK
@@ -129,7 +130,7 @@ fn SelectFolderDialog hwnd initPath = (
 	result = ""
 	SelectionDialogClass = LoadDotNetClass "SelectionDialogUtility.SelectFolderDialog" prompt:false
 	if (SelectionDialogClass != undefined)then( result = SelectionDialogClass.selectfolder (dnIntPtr hwnd) initPath )
-	else (result = getSavePath caption:"Select Folder" initialDir:initPath )
+	else (result = getSavePath caption:"Select Folder" initialDir:(getfilenamepath initPath) )
 	if (result == undefined)do(result = "")
 	result
 )
