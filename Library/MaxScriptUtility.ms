@@ -11,8 +11,7 @@ fn GetFileWithPatterns Dir searchPatterns = (
 fn getFilesRecursive folderPath searchPattern:"*" Recursively:false =
 (
 	searchPatterns = #()
-	my_files = #()
-	
+	my_files = #()	
 	if (classOf searchPattern == Array) then (	join searchPatterns searchPattern)
 	else(	append searchPatterns searchPattern	)		
 	join my_files (GetFileWithPatterns folderPath searchPatterns)		

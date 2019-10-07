@@ -86,9 +86,9 @@ fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
 
 dnColor = dotNetClass "System.Drawing.Color"
 dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
-fn ColorToHtml c = ( dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b) )
-fn ColorFromHtml hexColor = (
-	c = (dnColorTranslator.FromHtml hexColor)
+fn ColorToHtml c = ( (try(dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b))catch(dnColorTranslator.ToHtml dnColor.black )) )
+fn ColorFromHtml hexColor = (	
+	c = try(dnColorTranslator.FromHtml hexColor)catch( print ("convert "+hexColor as string +"fail");dnColor.black)
 	(color c.r c.g c.b c.a)
 )
 dnBrushes = dotNetClass "System.Drawing.Brushes"
@@ -126,11 +126,12 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 		)
 	)
 )
-fn SelectFolderDialog hwnd initPath = (
+fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
+	if (classof hwnd == RolloutClass)do(hwnd = hwnd.hwnd)
 	result = ""
 	SelectionDialogClass = LoadDotNetClass "SelectionDialogUtility.SelectFolderDialog" prompt:false
-	if (SelectionDialogClass != undefined)then( result = SelectionDialogClass.selectfolder (dnIntPtr hwnd) initPath )
-	else (result = getSavePath caption:"Select Folder" initialDir:(getfilenamepath initPath) )
+	if (SelectionDialogClass != undefined)then( result = SelectionDialogClass.selectfolder (dnIntPtr hwnd) InitialPath )
+	else (result = getSavePath caption:"Select Folder" initialDir:InitialPath )
 	if (result == undefined)do(result = "")
 	result
 )
