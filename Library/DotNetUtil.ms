@@ -1,5 +1,5 @@
-Enum = dotNetClass "System.Enum"
-Environment = dotnetclass "System.Environment"
+Local Enum = dotNetClass "System.Enum"
+Local Environment = dotnetclass "System.Environment"
 fn LoadDll dllpath prompt:true = (
 	LoadSucceed = classof (try(dotnet.loadAssembly dllpath)catch(false)) == dotNetObject
 	if (LoadSucceed)then( print ("LoadAssembly ["+(dllpath as string)+"] Succeed ! ") )
@@ -58,7 +58,7 @@ fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowChec
 		theDialog.showDialog()
 	)
 )
-SystemSounds = dotnetclass "System.Media.SystemSounds"
+Local SystemSounds = dotnetclass "System.Media.SystemSounds"
 
 fn WinForm name = ( (dotnetclass ("System.Windows.Forms."+name)))
 	
@@ -69,7 +69,7 @@ fn dnRectangleF x y w h = (dotnetobject "System.Drawing.RectangleF" x y w h)
 fn dnPoint x y = (dotnetobject "System.Drawing.Point" x y)	
 fn dnFont style size = (dotnetobject "System.Drawing.Font" style size)
 
-XmlConvert = dotnetclass "System.Xml.XmlConvert"
+Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
 fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )
 fn FilterInValidXMLChar txt = (
 	result = ""
@@ -77,24 +77,24 @@ fn FilterInValidXMLChar txt = (
 	result
 )
 
-WinFormControl = WinForm "Control"
-dnFlatStyle = Winform "FlatStyle"
-dnKeys = WinForm "keys"
-dnCursors = WinForm "Cursors"
+Local WinFormControl = WinForm "Control"
+Local dnFlatStyle = Winform "FlatStyle"
+Local dnKeys = WinForm "keys"
+Local dnCursors = WinForm "Cursors"
 
 fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
 
-dnColor = dotNetClass "System.Drawing.Color"
-dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
+Local dnColor = dotNetClass "System.Drawing.Color"
+Local dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
 fn ColorToHtml c = ( (try(dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b))catch(dnColorTranslator.ToHtml dnColor.black )) )
 fn ColorFromHtml hexColor = (	
 	c = try(dnColorTranslator.FromHtml hexColor)catch( print ("convert "+hexColor as string +"fail");dnColor.black)
 	(color c.r c.g c.b c.a)
 )
-dnBrushes = dotNetClass "System.Drawing.Brushes"
-dnPens = dotNetClass "System.Drawing.Pens"
-dnStringFormat = dotnetClass "System.Drawing.StringFormat"
-dnStringAlignment = dotNetClass "System.Drawing.StringAlignment"
+Local dnBrushes = dotNetClass "System.Drawing.Brushes"
+Local dnPens = dotNetClass "System.Drawing.Pens"
+Local dnStringFormat = dotnetClass "System.Drawing.StringFormat"
+Local dnStringAlignment = dotNetClass "System.Drawing.StringAlignment"
 
 fn GetColorManDotNetColor tag = (
 	c = (( colorman.getColor tag )*255) as color
@@ -121,8 +121,6 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 				for i = 0 to LastIndex do( SetDotNetControlColor c.Controls.item[i] Children:Children )
 			)
 			c.Invalidate()
-		)else(
-			print (c as string + " is not Windows.Forms.Control")
 		)
 	)
 )
@@ -135,3 +133,5 @@ fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
 	if (result == undefined)do(result = "")
 	result
 )
+
+Local dnTreeNode = dotnetclass "System.Windows.Forms.TreeNode"
