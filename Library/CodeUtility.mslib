@@ -8,24 +8,33 @@ fn IsMatchedParts parts txt = (
 	)
 	result
 )
-fn ReplaceEqualsSymbolValue n l newValue = (if ((FilterString l "=")[1] == n)do (l=n+"="+newValue);l)
-fn ReplaceLineFromTextFile filepath conditions = (
+fn ReadAllText filepath = ( TextStream = openFile filepath mode:"r";result = readDelimitedString TextStream "";close TextStream;result)
+fn GetArrayFromText filepath = ( (filterstring (ReadAllText filepath) "\n") )
+
+fn GetEqualsSymbolValueFromText filepath name = ( reult = undefined; textLines = GetArrayFromText filepath; for l in textLines do ( data = FilterString l "="; if (data.count > 1)do( if (data[1] == name)do( reult = (substituteString data[2] "\n" "");exit  ) ) ); reult )
+
+fn ReplaceEqualsSymbolValue n l newValue AddBeforeAt: = (if ((FilterString l "=")[1] == n)do (l=n+"="+newValue);l)
+fn ReplaceLineFromTextFile filepath conditions = (IsChanged = false
 	if (classof conditions == Array and conditions.count > 0)do(
 		TextStream = openFile filepath mode:"r"
-		contents = #()
-		while NOT eof TextStream do ( append contents (readLine TextStream))
+		contents = filterstring (readDelimitedString TextStream "") "\n"		
 		close TextStream
 		TextStream = openFile filepath mode:"w"
 		txt = ""
-		for l in contents do (
+		
+		for l in contents do (			
 			for c in conditions do ( l = c l )
 			txt += l + "\n"
 		)
+		if not IsChanged do (
+			print "not Changed "
+		)		
 		format "%" txt to:TextStream
 		close TextStream
 	)
 )--ReplaceTextFileLine @"C:\Users\Yushi\Desktop\QQQ.txt" #(fn qq l = (if (findstring l "a" != undefined)do (l="QQQQQQQQQQQQQQ");l))
-fn ConvertScriptToAbbreviation shortcutName txt: test:false = (--ConvertScriptToAbbreviation "testAbbrev" 
+
+fn ConvertScriptToAbbreviation shortcutName txt: test:false  = (--ConvertScriptToAbbreviation "testAbbrev" 
 	if (txt == unsupplied)do (txt = getclipboardText())
 	AbbrevFile = (getdir #maxData )+"MXS_EditorAbbrev.properties"
 	if (doesFileExist AbbrevFile)do(
@@ -36,7 +45,7 @@ fn ConvertScriptToAbbreviation shortcutName txt: test:false = (--ConvertScriptTo
 			::AbbrevName = shortcutName
 			::AbbrevContent = txt
 			ReplaceLineFromTextFile AbbrevFile #((fn Condition01 l = ( (ReplaceEqualsSymbolValue ::AbbrevName l ::AbbrevContent)) ))
-		)		
+		)
 		txt
 	)	
 )
@@ -57,3 +66,5 @@ fn DistributionFiles files DirType:#userStartupScripts explore:false = (--#userS
 		if explore do (shellLaunch "explorer.exe" (getFilenamePath files[1]) )
 	)else( info = "Not allow distribution of ["+(files as string)+"]\nDirType:\n#userScripts\n#userStartupScripts\n#startupScripts\n#scripts\n#plugcfg" )
 )
+
+

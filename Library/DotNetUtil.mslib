@@ -1,5 +1,59 @@
 Local Enum = dotNetClass "System.Enum"
 Local Environment = dotnetclass "System.Environment"
+Local SystemSounds = dotnetclass "System.Media.SystemSounds"
+fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
+
+Local dnFile = dotnetclass "System.IO.File"
+Local dnPath = dotnetclass "System.IO.Path"
+Local dnFileAttributes = dotnetclass "System.IO.FileAttributes"
+	--XML
+Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
+fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )
+fn FilterInValidXMLChar txt = ( result = "";for i = 1 to txt.count do ( if (IsValidXMLName txt[i] )do( result += txt[i] ) );result)
+	--Color
+Local dnColor = dotNetClass "System.Drawing.Color"
+fn GetColorManDotNetColor tag = ( c = (( colorman.getColor tag )*255) as color (dnColor.fromARGB c.r c.g c.b))
+Local dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
+fn ColorToHtml c default:(dnColor.black) = ( (try(dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b))catch(dnColorTranslator.ToHtml default )) )
+fn ColorFromHtml hexColor = (
+	c = try(dnColorTranslator.FromHtml hexColor)catch( print ("convert "+hexColor as string +"fail");dnColor.black);
+	result = (color c.r c.g c.b)
+-- 	result.h = c.GetHue()
+	result 
+)
+	--	Windows.Forms Class
+fn WinForm name = ( (dotnetclass ("System.Windows.Forms."+name)) )
+fn SystemDrawing name = ( (dotnetClass ("System.Drawing."+name) ) )
+Local dnFlatStyle = Winform "FlatStyle"
+Local dnTreeNode = WinForm "TreeNode"
+Local dnBrushes = SystemDrawing "Brushes"
+Local dnPens = SystemDrawing "Pens"
+Local dnStringFormat = SystemDrawing "StringFormat"
+Local dnStringAlignment = SystemDrawing "StringAlignment"
+-- Texture
+Local dnImageList = WinForm "ImageList"
+Local dnImage = SystemDrawing "Image"
+-- Input 
+Local dnMouseButtons = WinForm "MouseButtons"
+Local MouseMiddle = dnMouseButtons.Middle
+Local MouseLeft = dnMouseButtons.Left
+Local MouseRight = dnMouseButtons.Right
+Local WinFormControl = WinForm "Control"
+Local dnKeys = WinForm "keys"
+Local dnCursors = WinForm "Cursors"
+Local Ctrl = dnKeys.Control
+Local Shift = dnKeys.Shift
+Local Alt = dnKeys.Alt
+	-- Windows.Forms DotNetObject
+fn dnSolidBrush colorParm =  (dotNetObject "System.Drawing.SolidBrush" colorParm)
+fn dnConvertType obj type = (((dotNetClass "System.Convert").ChangeType obj type))
+fn dnRectangle x y w h = (dotnetobject "System.Drawing.Rectangle" x y w h)
+fn dnRectangleF x y w h = (dotnetobject "System.Drawing.RectangleF" x y w h)
+fn dnPoint x y = (dotnetobject "System.Drawing.Point" x y)
+fn dnFont style size = (dotnetobject "System.Drawing.Font" style size)
+
+	
+	
 fn LoadDll dllpath prompt:true = (
 	LoadSucceed = classof (try(dotnet.loadAssembly dllpath)catch(false)) == dotNetObject
 	if (LoadSucceed)then( print ("LoadAssembly ["+(dllpath as string)+"] Succeed ! ") )
@@ -58,48 +112,9 @@ fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowChec
 		theDialog.showDialog()
 	)
 )
-Local SystemSounds = dotnetclass "System.Media.SystemSounds"
 
-fn WinForm name = ( (dotnetclass ("System.Windows.Forms."+name)))
-	
-fn dnSolidBrush colorParm =  (dotNetObject "System.Drawing.SolidBrush" colorParm)
-fn dnConvertType obj type = (((dotNetClass "System.Convert").ChangeType obj type))
-fn dnRectangle x y w h = (dotnetobject "System.Drawing.Rectangle" x y w h)
-fn dnRectangleF x y w h = (dotnetobject "System.Drawing.RectangleF" x y w h)
-fn dnPoint x y = (dotnetobject "System.Drawing.Point" x y)	
-fn dnFont style size = (dotnetobject "System.Drawing.Font" style size)
 
-Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
-fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )
-fn FilterInValidXMLChar txt = (
-	result = ""
-	for i = 1 to txt.count do ( if (IsValidXMLName txt[i] )do( result += txt[i] ) )
-	result
-)
 
-Local WinFormControl = WinForm "Control"
-Local dnFlatStyle = Winform "FlatStyle"
-Local dnKeys = WinForm "keys"
-Local dnCursors = WinForm "Cursors"
-
-fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
-
-Local dnColor = dotNetClass "System.Drawing.Color"
-Local dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
-fn ColorToHtml c = ( (try(dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b))catch(dnColorTranslator.ToHtml dnColor.black )) )
-fn ColorFromHtml hexColor = (	
-	c = try(dnColorTranslator.FromHtml hexColor)catch( print ("convert "+hexColor as string +"fail");dnColor.black)
-	(color c.r c.g c.b c.a)
-)
-Local dnBrushes = dotNetClass "System.Drawing.Brushes"
-Local dnPens = dotNetClass "System.Drawing.Pens"
-Local dnStringFormat = dotnetClass "System.Drawing.StringFormat"
-Local dnStringAlignment = dotNetClass "System.Drawing.StringAlignment"
-
-fn GetColorManDotNetColor tag = (
-	c = (( colorman.getColor tag )*255) as color
-	(dnColor.fromARGB c.r c.g c.b)
-)
 
 fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatStyle:(dnFlatStyle.Standard) = (
 	if (backcolor == unsupplied) do (
@@ -134,4 +149,3 @@ fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
 	result
 )
 
-Local dnTreeNode = dotnetclass "System.Windows.Forms.TreeNode"

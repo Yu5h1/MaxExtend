@@ -11,13 +11,13 @@ struct ControlData
 			enabled = true,
 			events = unsupplied,
 			tooltip = unsupplied,
-			sParams = unsupplied
+			subParams = unsupplied
 )
 struct methodData
 (
 	method,
 	rParams = unsupplied,
- 	sParams  = unsupplied
+ 	subParams  = unsupplied
 )
 struct FunctionData
 (
@@ -30,20 +30,20 @@ struct eventData
 	type,
 	method = unsupplied
 )
-struct sPData
+struct subParamData
 (
 	key,
-	value,
-	IsString = true
+	value	
 )
 
-fn qtString val = (return ("\""+val+"\""))
-fn CheckValidUIControlName name = (
+fn qtString val = (("\""+val+"\""))
+fn ConvertToValidUIName name = (
+	name = name as string
 	numbers = "0123456789"
 	for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
 -- 	invalidUIName " :;'@#~[{}]|!£$%^&*()-=+\\,<.>//?";
-	name =  substituteString name " " "_";
-	name =  substituteString name ":" "Cl";
+	name =  substituteString name " " "_"
+	name =  substituteString name ":" "Cl"
 	name =  substituteString name ";" "sm"
 	name =  substituteString name "'" "sq"
 	name =  substituteString name "@" "ms"
@@ -88,34 +88,28 @@ Global RolloutEX = struct RolloutEX
 		str ="",
 	fn RemoveParentheses val =( return (substituteString (val as string) "()" "")),
 	fn detectArray &result target method = (
-		if ((classOf target) == Array)then(
-			for val in target do (
-				result += (method val)
-			)
-		)else(
-			result += (method target)
-		)
+		if ((classOf target) == Array)then( for val in target do ( result += (method val) ) )else( result += (method target) )
 	),
 	fn DetectValue val = (
 		result = val as string;
 		if (classof val == string)do ( result = (qtString val) )
 		return (" "+result);
 	),
-	fn detectSPData val =(
+	fn DetectsubParamData val =(
 		result = "";
-		if (classof val == sPData) then (
-			curvalue = val.value as String
-			if (val.IsString) do (curvalue = (qtString curvalue))
-			result = " "+ val.key + curvalue
+		if (classof val == subParamData) then (
+			curValue = val.value as String
+			if (classOf val.value == string) do (curValue = (qtString curValue))
+			result = " "+ val.key +":"+ curValue
 		)else(
-			messageBox "The Property of MethodData Named sParams should be sPData"
+			messageBox "The Property of MethodData Named subParams should be subParamData"
 		)
 		return result;
 	),
-	fn baseControl name type pos width height enabled caption: tooltip: offset: across: sParams: = 
+	fn baseControl name type pos width height enabled caption: tooltip: offset: across: subParams: = 
 	(
 		if (caption == unsupplied ) then (caption = name	)else(caption = substituteString caption "\"" "\\\"";)
-		name = CheckValidUIControlName name;
+		name = ConvertToValidUIName name;
 		str += "\n"+type+" "+ name +" "
 		if (type != #radiobuttons )do (str += (qtString caption) )
 		
@@ -132,22 +126,22 @@ Global RolloutEX = struct RolloutEX
 		if (offset != unsupplied) do (str +=" offset:"+(offset as String))
 		if (across  != unsupplied) do (str +=" across:"+(across as String))
 		
-		if (sParams  != unsupplied) do (
-			detectArray &str sParams detectSPData
+		if (subParams  != unsupplied) do (
+			detectArray &str subParams detectsubParamData
 		)
 		
 	),
 	fn baseEvent name type method = 
 	(
-		name = CheckValidUIControlName name;
+		name = ConvertToValidUIName name;
 		if (method != unsupplied) do (
 			executeMethod = (method as string);
 			if (classof method == methodData) do (
 				executeMethod = (method as string);
-				if (method.rParams != unsupplied or method.sParams != unsupplied) do (
+				if (method.rParams != unsupplied or method.subParams != unsupplied) do (
 					executeMethod = (RemoveParentheses method.method)
 					detectArray &executeMethod method.rParams DetectValue
-					detectArray &executeMethod method.sParams detectSPData
+					detectArray &executeMethod method.subParams detectsubParamData
 				)
 			)
 			eventName = (type as string);
@@ -163,30 +157,30 @@ Global RolloutEX = struct RolloutEX
 	),
 	public
 	fn Init = 
-	(
-		if (caption == unsupplied) do ( caption = (qtString name))
-		if (width == undefined)do (width = 100)
+	(		
+		if (caption == unsupplied) then ( caption = (qtString name) )
+		if ( width == undefined)do (width = 100)
 		if (height == undefined)do (height = 100)
-		declareName = CheckValidUIControlName name;
+		declareName = ConvertToValidUIName name;
 		str = "try(DestroyDialog "+ declareName+")catch()"
-		str +="\n"
+		str +="\n"		
 		str += ("rollout " + declareName +" "+ caption + " width:"+(width as String)+" height:" + (height as String)+ "(\n")
 	),
-	fn AddControl name type pos: width: height: enabled:true caption: visible: across: offset: sParams: =
+	fn AddControl name type pos: width: height: enabled:true caption: visible: across: offset: subParams: =
 	(
-		baseControl name type pos width height enabled caption:caption visible:visible across:across offset:offset sParams:sParams 
+		baseControl name type pos width height enabled caption:caption visible:visible across:across offset:offset subParams:subParams 
 	),
 	fn AddEvent name type method  =
 	(
 		baseEvent name type method
 	),
 	fn AddParameter name value: = (
-		str +="\nLocal "+(CheckValidUIControlName name) 
+		str +="\nLocal "+(ConvertToValidUIName name) 
 		if (value != unsupplied)do(str += " = "+(DetectValue value))
 	),
 	fn AddFunction name method args: =
 	(
-		str +="\nfn " + (CheckValidUIControlName name)
+		str +="\nfn " + (ConvertToValidUIName name)
 		if (args!= unsupplied)do(str += " "+args)
 		str += " = (\n"+method+"\n)"
 	),
@@ -203,9 +197,9 @@ Global RolloutEX = struct RolloutEX
 			enable = controls[i].enabled
 			baseControl controls[i].name controls[i].type curPos curWidth controls[i].height controls[i].enabled caption:controls[i].caption tooltip:controls[i].tooltip
 			if (controls[i].offset != unsupplied)do(curPosX-=controls[i].offset.x)
-			if (controls[i].sParams != unsupplied) do(
+			if (controls[i].subParams != unsupplied) do(
 				sp = ""
-				detectArray &sp controls[i].sParams detectSPData
+				detectArray &sp controls[i].subParams detectsubParamData
 				str += (RemoveParentheses sp)
 			)
 			if (controls[i].events != unsupplied) do(
@@ -222,9 +216,9 @@ Global RolloutEX = struct RolloutEX
 			
 		)
 	),
-	fn Button name pos: width: height: enabled:true Pressed: RightClick: caption: sParams: = 
+	fn Button name pos: width: height: enabled:true Pressed: RightClick: caption: subParams: = 
 	(
-		baseControl name #button pos width height enabled caption:caption sParams:sParams
+		baseControl name #button pos width height enabled caption:caption subParams:subParams
 		baseEvent name #pressed pressed
 		baseEvent name #rightclick RightClick
 	),
@@ -257,10 +251,46 @@ Global RolloutEX = struct RolloutEX
 		free str
 	)
 )
+fn SearchableControls targetSubRollout type items SearchText:"" valueType: events: itemEvents: = (
+	try(for rol in targetSubRollout.rollouts do (removesubrollout targetSubRollout rol))catch(print "sliders did not exist")
+	if (items.count > 0)then(
+		rol = (ConvertToValidUIName targetSubRollout.name)
+		createRolloutProcess = RolloutEX name:rol width:(targetSubRollout.width+50)
+		createRolloutProcess.Init()		
+		for i = 1 to items.count do (
+			itemName=""
+			Params=unsupplied
+			if (valueType == unsupplied)do(
+				case type of (
+					#ColorPicker:valueType=#color
+					#slider:valueType=#range
+					default:#value
+				)
+			)
+			
+			if (classof items[i] == string)then( itemName = items[i] )
+			else if (classof items[i] == array)do(
+				itemName=items[i][1]
+				defaultValue=items[i][2]
+				case valueType of (
+					#range:( if (classof defaultValue != point3)do(defaultValue=[0,100,items[i][2]]) )
+				)
+				Params=(subParamData valueType defaultValue)
+			)
+			strIndex = i as String
+			itemControlName = ConvertToValidUIName itemName
+			createRolloutProcess.AddControl itemControlName type caption:itemName subParams:Params
+			
+		)
+-- 		createRolloutProcess.AddEvent rol #open InitializeValueStr
+		
+		createRolloutProcess.Start mode:AddSubRollout targetRollout:targetSubRollout
+	)
+)
 fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300 RolledUpEvent: name:"Sliders" caption: rolloutParameter: OnChanged: RightClick: Buttondown: = (
 	try(for rol in targetSubRollout.rollouts do (removesubrollout targetSubRollout rol))catch(print "sliders did not exist")
 	if (List.count > 0)then(
-		name = (CheckValidUIControlName name)
+		name = (ConvertToValidUIName name)
 		SlidersRol = RolloutEX name:name caption:caption width:(targetSubRollout.width+50)
 		SlidersRol.Init()
 		SlidersRol.AddParameter "VisibleCount" value:0
@@ -337,7 +367,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		)		
 		for i = 1 to  List.count do (
 			strIndex = " "+(i as String)
-			ele = (CheckValidUIControlName List[i]);
+			ele = (ConvertToValidUIName List[i]);
 			SlidersRol.AddControl ele #slider caption:List[i]
 			if (OnChanged != unsupplied)do(
 				SlidersRol.AddEvent ele #changed (OnChanged+strIndex+" val;")
@@ -347,7 +377,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 			)
 			if (Buttondown != unsupplied)do(
 				SlidersRol.AddEvent ele #buttondown (	Buttondown+strIndex)
-			)			
+			)
 			
 			InitializeValueStr += "\n"+ele+".value = "+(ListValues[i] as String)
 			InitializeValueStr += "\nappend Elements "+ele
@@ -358,7 +388,6 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		SlidersRol.Start mode:AddSubRollout targetRollout:targetSubRollout
 	)
 )
-Global SearchableSliders = SearchableSliders;
 struct MessageBoxEx
  (
 	 curToolTips,
@@ -471,4 +500,3 @@ struct MessageBoxEx
 		on refuse pressed do (Done OKorNO:false;)		
 	)
  )
-Global MessageBoxEx = MessageBoxEx();
