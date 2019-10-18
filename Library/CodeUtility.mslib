@@ -10,61 +10,60 @@ fn IsMatchedParts parts txt = (
 )
 fn ReadAllText filepath = ( TextStream = openFile filepath mode:"r";result = readDelimitedString TextStream "";close TextStream;result)
 fn GetArrayFromText filepath = ( (filterstring (ReadAllText filepath) "\n") )
-
 fn GetEqualsSymbolValueFromText filepath name = ( reult = undefined; textLines = GetArrayFromText filepath; for l in textLines do ( data = FilterString l "="; if (data.count > 1)do( if (data[1] == name)do( reult = (substituteString data[2] "\n" "");exit  ) ) ); reult )
-
-fn ReplaceEqualsSymbolValue n l newValue AddBeforeAt: = (if ((FilterString l "=")[1] == n)do (l=n+"="+newValue);l)
-fn ReplaceLineFromTextFile filepath conditions = (IsChanged = false
-	if (classof conditions == Array and conditions.count > 0)do(
-		TextStream = openFile filepath mode:"r"
-		contents = filterstring (readDelimitedString TextStream "") "\n"		
-		close TextStream
+fn SetEqualsSymbolValue filepath name newValue AddAfter: = (IsChanged = false
+	if (doesfileExist filepath)do(
+		contents = GetArrayFromText filepath		
 		TextStream = openFile filepath mode:"w"
 		txt = ""
-		
-		for l in contents do (			
-			for c in conditions do ( l = c l )
+		newLine = name +"="+ newValue
+		for l in contents do (
+			data = FilterString l "="
+			if (data[1] == name)do (
+				l=newLine
+				IsChanged = true
+				
+			)
 			txt += l + "\n"
 		)
-		if not IsChanged do (
-			print "not Changed "
-		)		
+		if not IsChanged do (			
+ 			if (AddAfter == unsupplied)then(
+				txt+=newLine+"\n"
+			)else(
+			)			
+		)
 		format "%" txt to:TextStream
 		close TextStream
 	)
 )--ReplaceTextFileLine @"C:\Users\Yushi\Desktop\QQQ.txt" #(fn qq l = (if (findstring l "a" != undefined)do (l="QQQQQQQQQQQQQQ");l))
 
-fn ConvertScriptToAbbreviation shortcutName txt: test:false  = (--ConvertScriptToAbbreviation "testAbbrev" 
+fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false  = (--ConvertScriptToAbbreviation "testAbbrev" 
 	if (txt == unsupplied)do (txt = getclipboardText())
-	AbbrevFile = (getdir #maxData )+"MXS_EditorAbbrev.properties"
-	if (doesFileExist AbbrevFile)do(
+	MXS_EditorAbbrev = (getdir #maxData )+"MXS_EditorAbbrev.properties"
+	if (doesFileExist MXS_EditorAbbrev)do(
 		txt = substituteString txt "\\" "\\\\"
 		txt = substituteString txt "\n" "\\n"
 		txt = substituteString txt "\t" "\\t"
-		if not test do (
-			::AbbrevName = shortcutName
-			::AbbrevContent = txt
-			ReplaceLineFromTextFile AbbrevFile #((fn Condition01 l = ( (ReplaceEqualsSymbolValue ::AbbrevName l ::AbbrevContent)) ))
-		)
+		if not test do ( SetEqualsSymbolValue MXS_EditorAbbrev shortcutName txt AddAfter:AddAfter )
 		txt
 	)	
 )
-fn DistributionFiles files DirType:#userStartupScripts explore:false = (--#userScripts #userStartupScripts #startupScripts #scripts #plugcfg	
-	IsAllow = false
-	Info = ""
-	if (classOf files == array )then( IsAllow = doesFileExist files[1] )
-	else if (classOf files == string ) then ( IsAllow = doesFileExist files;if IsAllow then (files = #(files)) )
-	if IsAllow then (
-		targetFolder = (getdir DirType)+@"\"
-		for f in files do (
-			if (classof f == string and doesFileExist f) do (
-				destination = targetFolder+(filenamefrompath f)
-				if (doesFileExist destination ) do ( deleteFile destination )
-				CopyFile f destination	
-			)			
-		)
-		if explore do (shellLaunch "explorer.exe" (getFilenamePath files[1]) )
-	)else( info = "Not allow distribution of ["+(files as string)+"]\nDirType:\n#userScripts\n#userStartupScripts\n#startupScripts\n#scripts\n#plugcfg" )
-)
+-- fn DistributionFiles files DirType:#userStartupScripts explore:false = (--#userScripts #userStartupScripts #startupScripts #scripts #plugcfg	
+-- 	IsAllow = false
+-- 	Info = ""
+-- 	if (classOf files == array )then( IsAllow = doesFileExist files[1] )
+-- 	else if (classOf files == string ) then ( IsAllow = doesFileExist files;if IsAllow then (files = #(files)) )
+-- 	if IsAllow then (
+-- 		targetFolder = (getdir DirType)+@"\"
+-- 		for f in files do (
+-- 			if (classof f == string and doesFileExist f) do (
+-- 				destination = targetFolder+(filenamefrompath f)
+-- 				if (doesFileExist destination ) do ( deleteFile destination )
+-- 				CopyFile f destination	
+-- 			)			
+-- 		)
+-- 		if explore do (shellLaunch "explorer.exe" (getFilenamePath files[1]) )
+-- 	)else( info = "Not allow distribution of ["+(files as string)+"]\nDirType:\n#userScripts\n#userStartupScripts\n#startupScripts\n#scripts\n#plugcfg" )
+-- )
 
 
