@@ -1,11 +1,30 @@
+--General
 Local Enum = dotNetClass "System.Enum"
 Local Environment = dotnetclass "System.Environment"
 Local SystemSounds = dotnetclass "System.Media.SystemSounds"
 fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
-
-Local dnFile = dotnetclass "System.IO.File"
-Local dnPath = dotnetclass "System.IO.Path"
-Local dnFileAttributes = dotnetclass "System.IO.FileAttributes"
+-- IO
+fn SystemIO className = (dotnetclass ("System.IO."+className))
+Local dnFile = SystemIO "File"
+Local dnPath = SystemIO "Path"
+Local dnFileAttributes = SystemIO "FileAttributes"
+--Compiler Related
+fn CompileCSharp path &Assembly: = ( result = undefined
+	if (doesFileExist path)do(
+		ClassName = getfilenamefile path
+		code = dnFile.ReadAllText path
+		CSharpCodeProvider = dotnetobject "Microsoft.CSharp.CSharpCodeProvider"
+		CompilerParameters = dotnetobject "System.CodeDom.Compiler.CompilerParameters"
+		codeLines = FilterString code "\n"
+		nameSpaces = for l in codeLines where (findstring l "using" != undefined)collect( ((filterstring l " ;\n")[2]+".dll"))		
+		CompilerParameters.ReferencedAssemblies.AddRange nameSpaces
+		CompilerParameters.GenerateInMemory = true
+		CompilerResults = CSharpCodeProvider.CompileAssemblyFromSource CompilerParameters #(code)
+		if not (Assembly == unsupplied) do (Assembly =  CompilerResults.CompiledAssembly)			
+		result = CompilerResults.CompiledAssembly.CreateInstance ClassName		
+	)
+	result
+)
 	--XML
 Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
 fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )
@@ -116,7 +135,7 @@ fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowChec
 
 
 
-fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatStyle:(dnFlatStyle.Standard) = (
+fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.Standard = (
 	if (backcolor == unsupplied) do (
 		MaxBackColor = ( ( colorman.getColor #background )*255 ) as color
 		backcolor = dnColor.fromARGB MaxBackColor.r MaxBackColor.g MaxBackColor.b
@@ -127,10 +146,12 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 	)
 	if (classof dnControls != Array)do( dnControls = #(dnControls) )
 	for c in dnControls do (
-		if ((c == dotNetObject or classof c == dotNetControl) and (c.gettype()).IsSubclassOf WinFormControl )then(
-			c.backcolor = backcolor
-			c.forecolor = forecolor
-			if (hasProperty c "FlatStyle")do( c.FlatStyle = FlatStyle )
+		if (c == dotNetObject or classof c == dotNetControl)then(
+			 --and (c.gettype()).IsSubclassOf WinFormControl 
+-- 			print c.name
+			if (hasProperty c "backcolor")do(c.backcolor = backcolor)
+			if (hasProperty c "forecolor")do( c.forecolor = forecolor)			
+			if (hasProperty c "FlatStyle")do( c.FlatStyle = FlatStyle; )
 			if (Children and c.Controls.count > 0)do(
 				LastIndex = c.Controls.count-1;
 				for i = 0 to LastIndex do( SetDotNetControlColor c.Controls.item[i] Children:Children )
@@ -139,6 +160,7 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 		)
 	)
 )
+fn SetRolloutDotNetControlsColor target  backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.System = ( for c in target.controls do ( if (classof c == dotNetControl) do (SetDotNetControlColor c backcolor:backcolor forecolor:forecolor Children:true FlatStyle:FlatStyle) ) )
 fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
 	if (classof hwnd == RolloutClass)do(hwnd = hwnd.hwnd)
 	result = ""

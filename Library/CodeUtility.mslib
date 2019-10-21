@@ -46,8 +46,13 @@ fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false  = (--Conv
 		txt = substituteString txt "\t" "\\t"
 		if not test do ( SetEqualsSymbolValue MXS_EditorAbbrev shortcutName txt AddAfter:AddAfter )
 		txt
-	)	
+	)
+	edit ((getdir #maxData )+"MXS_EditorAbbrev.properties")
 )
+
+
+-- fn FixCodeWrap = ( substituteString (getclipboardText()) "\n\"" "\"" )
+	
 -- fn DistributionFiles files DirType:#userStartupScripts explore:false = (--#userScripts #userStartupScripts #startupScripts #scripts #plugcfg	
 -- 	IsAllow = false
 -- 	Info = ""
