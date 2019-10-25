@@ -7,6 +7,7 @@ fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
 fn SystemIO className = (dotnetclass ("System.IO."+className))
 Local dnFile = SystemIO "File"
 Local dnPath = SystemIO "Path"
+Local dnDirectory = SystemIO "Directory"
 Local dnFileAttributes = SystemIO "FileAttributes"
 --Compiler Related
 fn CompileCSharp path &Assembly: = ( result = undefined
@@ -61,8 +62,8 @@ Local WinFormControl = WinForm "Control"
 Local dnKeys = WinForm "keys"
 Local dnCursors = WinForm "Cursors"
 Local Ctrl = dnKeys.Control
-Local Shift = dnKeys.Shift
 Local Alt = dnKeys.Alt
+Local Shift = dnKeys.Shift
 	-- Windows.Forms DotNetObject
 fn dnSolidBrush colorParm =  (dotNetObject "System.Drawing.SolidBrush" colorParm)
 fn dnConvertType obj type = (((dotNetClass "System.Convert").ChangeType obj type))
@@ -131,19 +132,20 @@ fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowChec
 		theDialog.showDialog()
 	)
 )
-
-
-
+fn GetDotNetMaxForeColor = (
+		result = ( ( colorman.getColor #text )*255 ) as color
+		result = dnColor.fromARGB result.r result.g result.b
+		result
+)
+fn GetDotNetMaxBackColor = (
+		result = ( ( colorman.getColor #background )*255 ) as color
+		result = dnColor.fromARGB result.r result.g result.b
+		result
+)
 
 fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.Standard = (
-	if (backcolor == unsupplied) do (
-		MaxBackColor = ( ( colorman.getColor #background )*255 ) as color
-		backcolor = dnColor.fromARGB MaxBackColor.r MaxBackColor.g MaxBackColor.b
-	)
-	if (forecolor == unsupplied) do (
-		MaxForeColor = ( ( colorman.getColor #text )*255 ) as color
-		forecolor = dnColor.fromARGB MaxForeColor.r MaxForeColor.g MaxForeColor.b
-	)
+	if (backcolor == unsupplied) do ( backcolor = GetDotNetMaxBackColor() )
+	if (forecolor == unsupplied) do ( forecolor = GetDotNetMaxForeColor() )
 	if (classof dnControls != Array)do( dnControls = #(dnControls) )
 	for c in dnControls do (
 		if (c == dotNetObject or classof c == dotNetControl)then(
