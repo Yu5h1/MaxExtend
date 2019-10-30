@@ -1,0 +1,10 @@
+fn ShowInExplorer path = (
+	if (classOf path == String)do(
+		if doesFileExist path do (
+			path = pathConfig.convertPathToAbsolute path
+			if (isDirectoryWriteable path)then(shellLaunch "explorer.exe" path)
+			else( shellLaunch "explorer.exe" (" /select,"+path))
+		)
+	)
+)
+

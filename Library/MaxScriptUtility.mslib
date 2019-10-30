@@ -1,3 +1,18 @@
+fn GetUniquePath path = (	
+	if (doesFileExist path)do(
+		name = getFilenameFile path
+		numberString = ""
+		for i = name.count to 1 by -1 do (
+			if (name[i] as integer == undefined)then( exit )else( numberString = name[i] + numberString )
+		)
+		newIndex = numberString as integer
+		newIndex +=1		
+		name = substring name 1 (name.count-numberString.count)		
+		newPath = (getFilenamePath path)+(name + newIndex as string)+(getFilenameType path)
+		path = GetUniquePath newPath		
+	)
+	path
+)
 fn GetFileWithPatterns Dir searchPatterns = (
 	if (classof searchPatterns != Array) do (searchPatterns = #(searchPatterns))
 	results = #()
@@ -61,10 +76,4 @@ fn ClosePopupDialogByName name = (
 		)
 	)
 	if ( target != undefined)do(UIAccessor.CloseDialog target)
-)
-fn ClearModifiersFromSelection = (
-	for sel in (getCurrentSelection()) do (
-		while sel.modifiers.count > 0 do (deleteModifier sel sel.modifiers.count)
-		sel.pos = [0,0,0]
-	)
 )

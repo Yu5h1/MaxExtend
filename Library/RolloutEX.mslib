@@ -1,3 +1,4 @@
+--using CodeUtility.mslib
 struct ControlData
 (
 		public
@@ -35,8 +36,7 @@ struct subParamData
 	key,
 	value	
 )
-
-fn qtString val = (("\""+val+"\""))
+fn Quotes val = (("\""+val+"\""))
 fn ConvertToValidUIName name = (
 	name = name as string
 	numbers = "0123456789"
@@ -76,7 +76,7 @@ fn ConvertToValidUIName name = (
 	name =  substituteString name "\"" "qt"
 	return name;
 )
-Global RolloutEX = struct RolloutEX
+struct RolloutEX
 (
 	public
 		name,
@@ -92,14 +92,14 @@ Global RolloutEX = struct RolloutEX
 	),
 	fn DetectValue val = (
 		result = val as string;
-		if (classof val == string)do ( result = (qtString val) )
+		if (classof val == string)do ( result = (Quotes val) )
 		return (" "+result);
 	),
-	fn DetectsubParamData val =(
+	fn DetectSubParamData val =(
 		result = "";
 		if (classof val == subParamData) then (
 			curValue = val.value as String
-			if (classOf val.value == string) do (curValue = (qtString curValue))
+			if (classOf val.value == string) do (curValue = (Quotes curValue))
 			result = " "+ val.key +":"+ curValue
 		)else(
 			messageBox "The Property of MethodData Named subParams should be subParamData"
@@ -111,7 +111,7 @@ Global RolloutEX = struct RolloutEX
 		if (caption == unsupplied ) then (caption = name	)else(caption = substituteString caption "\"" "\\\"";)
 		name = ConvertToValidUIName name;
 		str += "\n"+type+" "+ name +" "
-		if (type != #radiobuttons )do (str += (qtString caption) )
+		if (type != #radiobuttons )do (str += (Quotes caption) )
 		
 		if pos != unsupplied do (
 			if (pos.y == 0)do(pos.y = ControlPosY);
@@ -121,7 +121,7 @@ Global RolloutEX = struct RolloutEX
 		)
 		if width != unsupplied do (	str +=" width:"+(width as String))
 		if height != unsupplied do (str +=" height:"+(height as String))
-		if tooltip != unsupplied do (str +=" tooltip:"+(qtString tooltip)	)
+		if tooltip != unsupplied do (str +=" tooltip:"+(Quotes tooltip)	)
 		if enabled == false do (str +=" enabled:false")
 		if (offset != unsupplied) do (str +=" offset:"+(offset as String))
 		if (across  != unsupplied) do (str +=" across:"+(across as String))
@@ -158,7 +158,7 @@ Global RolloutEX = struct RolloutEX
 	public
 	fn Init = 
 	(		
-		if (caption == unsupplied) then ( caption = (qtString name) )
+		if (caption == unsupplied) then ( caption = (Quotes name) )
 		if ( width == undefined)do (width = 100)
 		if (height == undefined)do (height = 100)
 		declareName = ConvertToValidUIName name;
@@ -232,7 +232,7 @@ Global RolloutEX = struct RolloutEX
 	fn editText name pos: width: height: text: changed: enabled:true caption: = 
 	(
 		baseControl name #editText pos width height enabled caption:caption
-		if text != unsupplied do (str +=" text:"+(qtString text))
+		if text != unsupplied do (str +=" text:"+(Quotes text))
 		baseEvent name #changed changed
 	),
 	fn newLine amount:22 =
@@ -382,7 +382,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 			InitializeValueStr += "\n"+ele+".value = "+(ListValues[i] as String)
 			InitializeValueStr += "\nappend Elements "+ele
 		)
-		InitializeValueStr += "\nSortSliders SearchText:"+(qtString SearchText)		
+		InitializeValueStr += "\nSortSliders SearchText:"+(Quotes SearchText)		
 		targetSubRollout.height = height;
 		SlidersRol.AddEvent name #open InitializeValueStr
 		SlidersRol.Start mode:AddSubRollout targetRollout:targetSubRollout

@@ -1,6 +1,9 @@
+
 --General
 Local Enum = dotNetClass "System.Enum"
 Local Environment = dotnetclass "System.Environment"
+Local SpecialFolder = dotnetclass "System.Environment+SpecialFolder"
+Local DesktopPath = Environment.GetFolderPath SpecialFolder.Desktop
 Local SystemSounds = dotnetclass "System.Media.SystemSounds"
 fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
 -- IO
@@ -25,7 +28,8 @@ fn CompileCSharp path &Assembly: = ( result = undefined
 		result = CompilerResults.CompiledAssembly.CreateInstance ClassName		
 	)
 	result
-)
+	
+)dotNet.loadAssembly
 	--XML
 Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
 fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )
@@ -37,19 +41,22 @@ Local dnColorTranslator = dotnetclass "System.Drawing.ColorTranslator"
 fn ColorToHtml c default:(dnColor.black) = ( (try(dnColorTranslator.ToHtml (dnColor.FromArgb c.a c.r c.g c.b))catch(dnColorTranslator.ToHtml default )) )
 fn ColorFromHtml hexColor = (
 	c = try(dnColorTranslator.FromHtml hexColor)catch( print ("convert "+hexColor as string +"fail");dnColor.black);
-	result = (color c.r c.g c.b)
--- 	result.h = c.GetHue()
+	result = (color c.r c.g c.b c.a)	
 	result 
 )
-	--	Windows.Forms Class
+--	Windows.Forms Class
 fn WinForm name = ( (dotnetclass ("System.Windows.Forms."+name)) )
-fn SystemDrawing name = ( (dotnetClass ("System.Drawing."+name) ) )
 Local dnFlatStyle = Winform "FlatStyle"
 Local dnTreeNode = WinForm "TreeNode"
+Local HorizontalAlignment = WinForm "HorizontalAlignment"
+Local TextFormatFlags = WinForm "TextFormatFlags"
+-- System.Drawing	
+fn SystemDrawing name = ( (dotnetClass ("System.Drawing."+name) ) )	
 Local dnBrushes = SystemDrawing "Brushes"
 Local dnPens = SystemDrawing "Pens"
 Local dnStringFormat = SystemDrawing "StringFormat"
 Local dnStringAlignment = SystemDrawing "StringAlignment"
+
 -- Texture
 Local dnImageList = WinForm "ImageList"
 Local dnImage = SystemDrawing "Image"
@@ -172,4 +179,46 @@ fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
 	if (result == undefined)do(result = "")
 	result
 )
-
+struct FloatTextBox 
+(	
+	--Initalize Paramaters
+	owner = undefined,
+	TextAlign = HorizontalAlignment.Left,
+	BeginEditEvents = #(),
+	EndEditEvents = #(),
+	--Construct
+	textbox = this .init(),
+	fn BeginEdit txt pos offset:[2,1] = (
+		textbox.text = txt
+		textbox.width = (getTextExtent txt).x+10
+		textbox.location.x = pos.x+offset.x
+		textbox.location.y = pos.y+offset.y
+		textbox.Enabled = textbox.Visible = true
+		textbox.focus()
+		for beginEvent in BeginEditEvents do ( if (classOf beginEvent == MAXScriptFunction)do( beginEvent s:textbox sender:textbox ) )
+	),
+	fn EndEdit = (		
+		for endEvent in BeginEditEvents do ( if (classOf beginEvent == MAXScriptFunction)do( endEvent s:textbox sender:textbox ) )
+	),
+	fn init = (
+		result = undefined
+		if (owner== undefined)then(
+			print "Undefined owner"
+		)else(
+			result = dotNetObject "System.Windows.Forms.TextBox"
+			result.tag = dotnetmxsvalue this
+			owner.Controls.add result
+			result.TextAlign = TextAlign
+			result.Enabled = result.Visible = false
+			result.borderstyle = result.borderstyle.none
+			dotNet.addEventHandler result "KeyUp" (fn FloatTextBoxKeyDown s e = (
+				k = e.keycode
+				case e.keycode of (
+					(k.Escape): (s.parent.focus()	)					
+				)
+			))
+			dotNet.addEventHandler result "LostFocus" (fn CloseFloatTextBox s e = ( s.tag.value.EndEdit(); s.Enabled = s.Visible  = false;s.Invalidate() ))
+		)
+		result
+	)
+)

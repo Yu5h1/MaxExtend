@@ -9,14 +9,12 @@ fn IsMatchedParts parts txt = (
 	result  
 )
 fn ReadAllText filepath = ( TextStream = openFile filepath mode:"r";result = readDelimitedString TextStream "";close TextStream;result)
-
 fn GetArrayFromText filepath filtertxt: ToString:false = (
 	result = (filterstring (ReadAllText filepath) "\n")
 	if (filtertxt != unsupplied)do( for i = result.count to 1 by -1 do ( if (FindString result[i] filtertxt == undefined) do ( deleteItem result i) ) )
 	if (ToString)do( txt = "" ; for l in result do ( txt += l ); result = txt; )
 	result
 )
-
 fn GetEqualsSymbolValueFromText filepath name = ( reult = undefined; textLines = GetArrayFromText filepath; for l in textLines do ( data = FilterString l "="; if (data.count > 1)do( if (data[1] == name)do( reult = (substituteString data[2] "\n" "");exit  ) ) ); reult )
 fn SetEqualsSymbolValue filepath name newValue AddAfter: = (IsChanged = false
 	if (doesfileExist filepath)do(
@@ -36,14 +34,6 @@ fn SetEqualsSymbolValue filepath name newValue AddAfter: = (IsChanged = false
 		if not IsChanged do (
 			if (AddAfter == unsupplied)then( txt+=newLine+"\n" )
 			else(
-				case AddAfter of (
-					#VALUES:(AddAfter = "/* VALUES */")
-					#STRUCTURES:(AddAfter="/* CODE STRUCTURES */")
-					#ATTRIBUTES:(AddAfter="/* CUSTOM ATTRIBUTES */")
-					#CONTROLS:(AddAfter="/*MXS_CONTROLS*/")
-					#EVENT:(AddAfter="EVENT HANDLERS */")
-					default:()
-				)
 				txt = ""
 				for i = 1 to contents.count do (
 					curLine = contents[i]
@@ -61,7 +51,15 @@ fn SetEqualsSymbolValue filepath name newValue AddAfter: = (IsChanged = false
 	)
 )--ReplaceTextFileLine @"C:\Users\Yushi\Desktop\QQQ.txt" #(fn qq l = (if (findstring l "a" != undefined)do (l="QQQQQQQQQQQQQQ");l))
 
-fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false = (--ConvertScriptToAbbreviation "testAbbrev" 
+fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false = (
+	case AddAfter of (
+		#VALUES:(AddAfter = "/* VALUES */")
+		#STRUCTURES:(AddAfter="/* CODE STRUCTURES */")
+		#ATTRIBUTES:(AddAfter="/* CUSTOM ATTRIBUTES */")
+		#CONTROLS:(AddAfter="/*MXS_CONTROLS*/")
+		#EVENT:(AddAfter="EVENT HANDLERS */")
+		default:()
+	)
 	if (txt == unsupplied)do (txt = getclipboardText())
 	MXS_EditorAbbrev = (getdir #maxData )+"MXS_EditorAbbrev.properties"
 	if (doesFileExist MXS_EditorAbbrev)do(
@@ -78,4 +76,3 @@ fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false = (--Conve
 	)	
 	OK
 )
-

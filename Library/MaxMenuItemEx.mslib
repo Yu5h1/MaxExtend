@@ -1,0 +1,43 @@
+fn Quotes val = (("\""+val+"\""))
+fn ConvertToValidUIName name = (
+	name = name as string
+	numbers = "0123456789"
+	for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
+-- 	invalidUIName " :;'@#~[{}]|!£$%^&*()-=+\\,<.>//?";
+	replaceDatas = #(	
+		#(" ", "_"),#(":", "Cl"),#(";", "sm"),#("'", "sq"),#("@", "ms"),#("#", "hs"),#("~", "td"),#("[", "osb"),#("{", "ocb"),
+		#("}", "ccb"),#("]", "csb"),#("|", "pp"),#("!", "ex"),#("£", "pd"),#("$", "dl"),#("%", "pc"),#("^", "or"),#("&", "ad"),
+		#("*", "st"),#("(", "bk"),#(")", "bk"),#("-", "ms"),#("=", "eq"),#("+", "ps"),#("\\", "sl"),#(",","cm"),#("<", "lt"),
+		#(".", "dt"),#(">", "mt"),#("/", "bsl"),#("?", "qm"),#("\"", "qt")
+	)
+	for item in replaceDatas do ( name =  substituteString name item[1] item[2] )
+	name
+)
+fn AddMenuItem name event = (
+	propName = (ConvertToValidUIName name) +"_item"
+	("menuItem "+propName+" \""+ name +"\"\non "+propName+" picked do ( "+event+" )\n") 
+)
+fn AddsubMenu name subMenuBody filter: = (
+	if (filter != unsupplied)then(filter="filter:"+filter+"")else(filter="")
+	subItems = "" ; subItemsEvents = "" ; subMenuBodyArray = filterString subMenuBody "\n" 
+	fn ConvertToSubMenuItem subMenuName item = (
+		itemArr = FilterString item " " 
+		itemArr[2] = subMenuName+"_"+itemArr[2] --add submenu title to property name
+		item = "" ; for ele in itemArr do ( item +=ele+" ")
+		item 
+	)
+	for l in subMenuBodyArray do ( l = ConvertToSubMenuItem name l 
+	if (FindString l "on " == undefined)then( subItems+=l+"\n" )else( subItemsEvents+=l+"\n" ) ) 
+	("subMenu \""+name+"\" "+filter+" (\n"+subItems+"\n)\n"+subItemsEvents)
+)
+fn AddSeparator name filter: = (	
+	if (filter != unsupplied)then(filter="filter:"+filter+"")else(filter="")
+	("separator "+(ConvertToValidUIName name)+" "+ filter+" \n")
+)
+fn CreateMenuItem name bodyTxT openEvent: pos:mouse.screenpos align:#align_topleft printCode:false = (
+	propName = (ConvertToValidUIName name)+"_Menu"
+	if (openEvent != unsupplied)then(openEvent = "on "+propName+" open do ("+openEvent+")\n")else(openEvent = "")
+	menuCode = ("RCMenu "+propName+" (\n"+bodyTxT+"\n"+openEvent+")")
+	PopupMenu (execute menuCode) pos:pos align:align
+	if (printCode)do(print menuCode)
+)
