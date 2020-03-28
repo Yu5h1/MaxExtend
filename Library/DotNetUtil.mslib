@@ -6,6 +6,8 @@ Local SpecialFolder = dotnetclass "System.Environment+SpecialFolder"
 Local DesktopPath = Environment.GetFolderPath SpecialFolder.Desktop
 Local SystemSounds = dotnetclass "System.Media.SystemSounds"
 fn dnIntPtr param = ( (DotNetObject "System.IntPtr" param) )
+Local StringFormat = (dotnetclass "System.String").Format
+fn ToString num formate = ( (DotNetObject "System.Single" num).ToString("0.00")as float )
 -- IO
 fn SystemIO className = (dotnetclass ("System.IO."+className))
 Local dnFile = SystemIO "File"
@@ -73,7 +75,7 @@ Local Alt = dnKeys.Alt
 Local Shift = dnKeys.Shift
 	-- Windows.Forms DotNetObject
 fn dnSolidBrush colorParm =  (dotNetObject "System.Drawing.SolidBrush" colorParm)
-fn dnConvertType obj type = (((dotNetClass "System.Convert").ChangeType obj type))
+fn dnConvert obj type = (((dotNetClass "System.Convert").ChangeType obj type))
 fn dnRectangle x y w h = (dotnetobject "System.Drawing.Rectangle" x y w h)
 fn dnRectangleF x y w h = (dotnetobject "System.Drawing.RectangleF" x y w h)
 fn dnPoint x y = (dotnetobject "System.Drawing.Point" x y)

@@ -50,7 +50,7 @@ fn SetEqualsSymbolValue filepath name newValue AddAfter: = (IsChanged = false
 		close TextStream
 	)
 )--ReplaceTextFileLine @"C:\Users\Yushi\Desktop\QQQ.txt" #(fn qq l = (if (findstring l "a" != undefined)do (l="QQQQQQQQQQQQQQ");l))
-
+fn EditEditorAbbrev = (edit ((getdir #maxData )+"MXS_EditorAbbrev.properties"))
 fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false = (
 	case AddAfter of (
 		#VALUES:(AddAfter = "/* VALUES */")
@@ -70,9 +70,10 @@ fn ConvertScriptToAbbreviation shortcutName txt: AddAfter: test:false = (
 		else( SetEqualsSymbolValue MXS_EditorAbbrev shortcutName txt AddAfter:AddAfter )
 	)
 	if not test do(
-		edit ((getdir #maxData )+"MXS_EditorAbbrev.properties") 
+		EditEditorAbbrev()
 		UpdateMXSEAbbrev = @"F:\MyWork\MaxExtend\WIP\UpdateMXSEAbbrev.ahk"
 		if (doesFileExist UpdateMXSEAbbrev)do(shellLaunch UpdateMXSEAbbrev "")
 	)	
 	OK
 )
+

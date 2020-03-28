@@ -34,14 +34,14 @@ struct eventData
 struct subParamData
 (
 	key,
-	value	
+	value
 )
 fn Quotes val = (("\""+val+"\""))
 fn ConvertToValidUIName name = (
 	name = name as string
 	numbers = "0123456789"
 	for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
--- 	invalidUIName " :;'@#~[{}]|!£$%^&*()-=+\\,<.>//?";
+-- 	invalidUIName " :;'@#~[{}]|!ï¿½$%^&*()-=+\\,<.>//?";
 	name =  substituteString name " " "_"
 	name =  substituteString name ":" "Cl"
 	name =  substituteString name ";" "sm"
@@ -55,7 +55,7 @@ fn ConvertToValidUIName name = (
 	name =  substituteString name "]" "csb"
 	name =  substituteString name "|" "pp"
 	name =  substituteString name "!" "ex"
-	name =  substituteString name "£" "pd"
+	name =  substituteString name "ï¿½" "pd"
 	name =  substituteString name "$" "dl"
 	name =  substituteString name "%" "pc"
 	name =  substituteString name "^" "or"
@@ -80,9 +80,9 @@ struct RolloutEX
 (
 	public
 		name,
-		width, 
+		width,
 		height,
-		caption = unsupplied,		
+		caption = unsupplied,
 	private
 		ControlPosY = 8,
 		str ="",
@@ -106,13 +106,13 @@ struct RolloutEX
 		)
 		return result;
 	),
-	fn baseControl name type pos width height enabled caption: tooltip: offset: across: subParams: = 
+	fn baseControl name type pos width height enabled caption: tooltip: offset: across: subParams: =
 	(
 		if (caption == unsupplied ) then (caption = name	)else(caption = substituteString caption "\"" "\\\"";)
 		name = ConvertToValidUIName name;
 		str += "\n"+type+" "+ name +" "
 		if (type != #radiobuttons )do (str += (Quotes caption) )
-		
+
 		if pos != unsupplied do (
 			if (pos.y == 0)do(pos.y = ControlPosY);
 			if (type == #editText) do ( pos.y +=2)
@@ -125,13 +125,13 @@ struct RolloutEX
 		if enabled == false do (str +=" enabled:false")
 		if (offset != unsupplied) do (str +=" offset:"+(offset as String))
 		if (across  != unsupplied) do (str +=" across:"+(across as String))
-		
+
 		if (subParams  != unsupplied) do (
 			detectArray &str subParams detectsubParamData
 		)
-		
+
 	),
-	fn baseEvent name type method = 
+	fn baseEvent name type method =
 	(
 		name = ConvertToValidUIName name;
 		if (method != unsupplied) do (
@@ -151,31 +151,31 @@ struct RolloutEX
 					executeMethod = (RemoveParentheses method)+" val:val"
 				)
 			)
-			
+
 			str += "\non " + name  + " " + eventName +" do( "+executeMethod+" )"
 		)
 	),
 	public
-	fn Init = 
-	(		
+	fn Init =
+	(
 		if (caption == unsupplied) then ( caption = (Quotes name) )
 		if ( width == undefined)do (width = 100)
 		if (height == undefined)do (height = 100)
 		declareName = ConvertToValidUIName name;
 		str = "try(DestroyDialog "+ declareName+")catch()"
-		str +="\n"		
+		str +="\n"
 		str += ("rollout " + declareName +" "+ caption + " width:"+(width as String)+" height:" + (height as String)+ "(\n")
 	),
 	fn AddControl name type pos: width: height: enabled:true caption: visible: across: offset: subParams: =
 	(
-		baseControl name type pos width height enabled caption:caption visible:visible across:across offset:offset subParams:subParams 
+		baseControl name type pos width height enabled caption:caption visible:visible across:across offset:offset subParams:subParams
 	),
 	fn AddEvent name type method  =
 	(
 		baseEvent name type method
 	),
 	fn AddParameter name value: = (
-		str +="\nLocal "+(ConvertToValidUIName name) 
+		str +="\nLocal "+(ConvertToValidUIName name)
 		if (value != unsupplied)do(str += " = "+(DetectValue value))
 	),
 	fn AddFunction name method args: =
@@ -184,16 +184,16 @@ struct RolloutEX
 		if (args!= unsupplied)do(str += " "+args)
 		str += " = (\n"+method+"\n)"
 	),
-	fn  HorizontalComposition controls pos = 
+	fn  HorizontalComposition controls pos =
 	(
 		curPosX = pos.x;
-		for i = 1 to controls.count do (			
+		for i = 1 to controls.count do (
 			if (controls[i].offset != unsupplied)do(curPosX+=controls[i].offset.x)
 			curPos = [curPosX,pos.y]
 			curWidth = (this.width/controls.count);
-			if (controls[i].width != unsupplied) do ( curWidth = controls[i].width) 
+			if (controls[i].width != unsupplied) do ( curWidth = controls[i].width)
 			curPosX += curWidth
-			
+
 			enable = controls[i].enabled
 			baseControl controls[i].name controls[i].type curPos curWidth controls[i].height controls[i].enabled caption:controls[i].caption tooltip:controls[i].tooltip
 			if (controls[i].offset != unsupplied)do(curPosX-=controls[i].offset.x)
@@ -213,10 +213,10 @@ struct RolloutEX
 					messageBox "The Property of ControlData Named events should be EventData"
 				)
 			)
-			
+
 		)
 	),
-	fn Button name pos: width: height: enabled:true Pressed: RightClick: caption: subParams: = 
+	fn Button name pos: width: height: enabled:true Pressed: RightClick: caption: subParams: =
 	(
 		baseControl name #button pos width height enabled caption:caption subParams:subParams
 		baseEvent name #pressed pressed
@@ -229,7 +229,7 @@ struct RolloutEX
 		baseEvent name #picked picked
 		baseEvent name #rightclick rightclick
 	),
-	fn editText name pos: width: height: text: changed: enabled:true caption: = 
+	fn editText name pos: width: height: text: changed: enabled:true caption: =
 	(
 		baseControl name #editText pos width height enabled caption:caption
 		if text != unsupplied do (str +=" text:"+(Quotes text))
@@ -239,13 +239,13 @@ struct RolloutEX
 	(
 		ControlPosY += amount;
 	),
-	fn Start targetRollout: mode:createDialog = 
+	fn Start targetRollout: mode:createDialog =
 	(
 		str += "\n)\n"
 		case mode of (
 			createDialog:(mode (execute str) )
 			addRollout:(mode (execute str) targetRollout)
-			AddSubRollout:(mode targetRollout (execute str))			
+			AddSubRollout:(mode targetRollout (execute str))
 		)
 --  		print str
 		free str
@@ -256,7 +256,7 @@ fn SearchableControls targetSubRollout type items SearchText:"" valueType: event
 	if (items.count > 0)then(
 		rol = (ConvertToValidUIName targetSubRollout.name)
 		createRolloutProcess = RolloutEX name:rol width:(targetSubRollout.width+50)
-		createRolloutProcess.Init()		
+		createRolloutProcess.Init()
 		for i = 1 to items.count do (
 			itemName=""
 			Params=unsupplied
@@ -267,7 +267,7 @@ fn SearchableControls targetSubRollout type items SearchText:"" valueType: event
 					default:#value
 				)
 			)
-			
+
 			if (classof items[i] == string)then( itemName = items[i] )
 			else if (classof items[i] == array)do(
 				itemName=items[i][1]
@@ -280,10 +280,10 @@ fn SearchableControls targetSubRollout type items SearchText:"" valueType: event
 			strIndex = i as String
 			itemControlName = ConvertToValidUIName itemName
 			createRolloutProcess.AddControl itemControlName type caption:itemName subParams:Params
-			
+
 		)
 -- 		createRolloutProcess.AddEvent rol #open InitializeValueStr
-		
+
 		createRolloutProcess.Start mode:AddSubRollout targetRollout:targetSubRollout
 	)
 )
@@ -307,7 +307,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		"	Index = i \n"+
 		"	if (firstIndex != undefined)do( \n"+
 		"		Index = i +(firstIndex-1) \n"+
-		"		if (Index  > Elements.count )do(Index = Index-Elements.count) \n"+					
+		"		if (Index  > Elements.count )do(Index = Index-Elements.count) \n"+
 		"	)\n"+
 		"	ele = Elements[Index] \n"+
 		"	if ((findString ele.caption SearchText) == undefined)then("+"\n"+
@@ -320,22 +320,22 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		" )\n"+
 		"sliderUIHeight = 23+(VisibleCount*58)\n"+
 		name+".height = sliderUIHeight;"
-		
-		SlidersRol.AddFunction "SortSliders" sortMethods args:("SearchText:\"\"")			
-		
+
+		SlidersRol.AddFunction "SortSliders" sortMethods args:("SearchText:\"\"")
+
 		SlidersRol.AddFunction "SwitchSliders" (
 			"IsSlidersEnabled=not IsSlidersEnabled"+
 			"\nfor ele in Elements do (ele.enabled = IsSlidersEnabled)"
 		)
 		SlidersRol.AddFunction "ResetSliders" ("for ele in Elements do (ele.value = 0)")
-		
+
 		SlidersRol.AddFunction  "ChangeTargetSlider" (
 			"	next = current\n"+
 			"	if (IsNext)then(if (current+1 <= Elements.count)then(next = current+1)else(next = 1)\n"+
 			"	)else(if (current-1 > 0)then(next = current-1)else(next = Elements.count))\n"+
 			"	next"
 		) args:"current IsNext"
-		
+
 		SlidersRol.AddFunction  "IsolateSlider" (
 			"if (VisibleCount !=0)do(\n"+
 			"	current = ChangeTargetSlider current IsNext\n"+
@@ -344,18 +344,18 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 			"		val = 0\n"+
 			" 		if (i==current)then(val = 100)else(val = 0)\n"+
 			"		Elements[i].value = val\n"+
-			"		"+OnChanged+" i val\n"+			
+			"		"+OnChanged+" i val\n"+
 			"	)\n"+
 			"	"+Buttondown+" current\n"+
 -- 			"	scrollPosNormalized = "+name+".scrollpos as float/(Sliders.height-"+height as string+"+1)\n"+
--- 			"	NHeight = "+height as string+"*scrollPosNormalized\n"+			
+-- 			"	NHeight = "+height as string+"*scrollPosNormalized\n"+
 -- 			"	print ("+name+".scrollpos as string + \"		\"+ Elements[current].pos.y as string  + \"		\"+ (Sliders.height-"+height as string+"+1) as string)\n"+
 --  			"	if (Elements[current].pos.y >("+name+".scrollpos+("+height as string+"-NHeight))) do ("+name+".scrollpos = Elements[current].pos.y+(NHeight/2))\n"+
 -- 			"	if (Elements[current].pos.y <("+name+".scrollpos-NHeight)) do ("+name+".scrollpos = Elements[current].pos.y-("+height as string+"-NHeight))\n"+
 			")\n"+
 			"current"
 		) args:"current IsNext"
-		
+
 		InitializeValueStr = ""
 		InitializeValueStr += "\nElements = #()"
 		if (rolloutParameter!=unsupplied)do(
@@ -364,7 +364,7 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 		if (RolledUpEvent != unsupplied)do(
 			SlidersRol.AddEvent name #rolledUp RolledUpEvent
 			InitializeValueStr +=  (substituteString (RolledUpEvent as string) "()" "") + " val:true"
-		)		
+		)
 		for i = 1 to  List.count do (
 			strIndex = " "+(i as String)
 			ele = (ConvertToValidUIName List[i]);
@@ -378,11 +378,11 @@ fn SearchableSliders targetSubRollout SearchText:"" List: ListValues: height:300
 			if (Buttondown != unsupplied)do(
 				SlidersRol.AddEvent ele #buttondown (	Buttondown+strIndex)
 			)
-			
+
 			InitializeValueStr += "\n"+ele+".value = "+(ListValues[i] as String)
 			InitializeValueStr += "\nappend Elements "+ele
 		)
-		InitializeValueStr += "\nSortSliders SearchText:"+(Quotes SearchText)		
+		InitializeValueStr += "\nSortSliders SearchText:"+(Quotes SearchText)
 		targetSubRollout.height = height;
 		SlidersRol.AddEvent name #open InitializeValueStr
 		SlidersRol.Start mode:AddSubRollout targetRollout:targetSubRollout
@@ -401,7 +401,7 @@ struct MessageBoxEx
 		Label ToolTipsLabel "Input Some " width:300 pos:[13,10]
 		Edittext TextFeild "Text:" pos:[13,30] visible:false
 		Spinner X "X:" across:3 width:60 align:#center pos:[13,30]
-		Spinner Y "Y:" width:60 pos:[83,30] 
+		Spinner Y "Y:" width:60 pos:[83,30]
 		Spinner Z "Z:" width:60 pos:[153,30] visible:true
 		Spinner W "W:" width:60 pos:[233,30] visible:true
 		Button image "image" pos:[13,30] images: #("Error_i.bmp", "", 1, 1, 1, 1, 1,true) visible:false enabled:false border:false
@@ -417,12 +417,12 @@ struct MessageBoxEx
 			MessageBoxEx.curType = type;
 			MessageBoxEx.IsYesNoCancel  = yesNoCancel;
 			MessageBoxEx.curDoNotShowThisAgainChecked = DoNotShowThisAgainChecked;
-			createDialog MessageBoxEx.InputBox modal:true style:#(#style_sunkenedge) 
+			createDialog MessageBoxEx.InputBox modal:true style:#(#style_sunkenedge)
 			result -- only put it here if the dialog is modal
 		)
  		on InputBox open do
  		(
-			if (MessageBoxEx.curToolTips!=unsupplied)do(ToolTipsLabel.text = MessageBoxEx.curToolTips;)			
+			if (MessageBoxEx.curToolTips!=unsupplied)do(ToolTipsLabel.text = MessageBoxEx.curToolTips;)
 			case MessageBoxEx.curType of(
 				#text:(
 					TextFeild.visible  = true;
@@ -497,6 +497,6 @@ struct MessageBoxEx
 			destroyDialog MessageBoxEx.InputBox;
 		)
  		on permit pressed do (Done OKorNO:true;)
-		on refuse pressed do (Done OKorNO:false;)		
+		on refuse pressed do (Done OKorNO:false;)
 	)
  )

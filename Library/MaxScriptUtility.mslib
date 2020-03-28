@@ -1,16 +1,25 @@
-fn GetUniquePath path = (	
-	if (doesFileExist path)do(
-		name = getFilenameFile path
-		numberString = ""
-		for i = name.count to 1 by -1 do (
-			if (name[i] as integer == undefined)then( exit )else( numberString = name[i] + numberString )
-		)
-		newIndex = numberString as integer
-		newIndex +=1		
-		name = substring name 1 (name.count-numberString.count)		
-		newPath = (getFilenamePath path)+(name + newIndex as string)+(getFilenameType path)
-		path = GetUniquePath newPath		
+fn GetUniqueNameEndWithNumber name = (
+	numberString = ""
+	for i = name.count to 1 by -1 do ( -- get end number
+		if (name[i] as integer == undefined)then( exit )else( numberString = name[i] + numberString )
 	)
+	newIndex = numberString as integer
+	newIndex +=1		
+	name = (substring name 1 (name.count-numberString.count)	) + (newIndex as string)	
+)
+fn GetUniquePath path = (
+	if (doesFileExist path)do(
+		name = GetUniqueNameEndWithNumber (getFilenameFile path)		
+		newPath = (getFilenamePath path)+name+(getFilenameType path)
+		path = GetUniquePath newPath	
+	)
+	path
+)
+fn CreateFileUniquely path contents:"" = (
+	path = GetUniquePath path		
+	scriptfile = createFile path
+	format "%" contents to:scriptfile
+	close scriptfile	
 	path
 )
 fn GetFileWithPatterns Dir searchPatterns = (
@@ -76,4 +85,10 @@ fn ClosePopupDialogByName name = (
 		)
 	)
 	if ( target != undefined)do(UIAccessor.CloseDialog target)
+)
+fn ClearModifiersFromSelection = (
+	for sel in (getCurrentSelection()) do (
+		while sel.modifiers.count > 0 do (deleteModifier sel sel.modifiers.count)
+		sel.pos = [0,0,0]
+	)
 )
