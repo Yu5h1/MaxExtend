@@ -251,7 +251,7 @@ struct RolloutEX
 		free str
 	)
 )
-fn SearchableControls targetSubRollout type items SearchText:"" valueType: events: itemEvents: = (
+fn SearchableControls targetSubRollout type items SearchText:"" valueType: itemsEvent: = (
 	try(for rol in targetSubRollout.rollouts do (removesubrollout targetSubRollout rol))catch(print "sliders did not exist")
 	if (items.count > 0)then(
 		rol = (ConvertToValidUIName targetSubRollout.name)
@@ -264,7 +264,7 @@ fn SearchableControls targetSubRollout type items SearchText:"" valueType: event
 				case type of (
 					#ColorPicker:valueType=#color
 					#slider:valueType=#range
-					default:#value
+					default:valueType=#value
 				)
 			)
 
@@ -280,7 +280,9 @@ fn SearchableControls targetSubRollout type items SearchText:"" valueType: event
 			strIndex = i as String
 			itemControlName = ConvertToValidUIName itemName
 			createRolloutProcess.AddControl itemControlName type caption:itemName subParams:Params
-
+			if (itemsEvent != unsupplied)do(
+				createRolloutProcess.AddEvent itemControlName #picked (itemsEvent +" "+ itemControlName + " val" )
+			)
 		)
 -- 		createRolloutProcess.AddEvent rol #open InitializeValueStr
 
