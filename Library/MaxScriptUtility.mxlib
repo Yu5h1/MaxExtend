@@ -88,7 +88,6 @@ fn ClosePopupDialogByName name = (
 )
 fn ClearModifiersFromSelection = (
 	for sel in (getCurrentSelection()) do (
-		while sel.modifiers.count > 0 do (deleteModifier sel sel.modifiers.count)
-		sel.pos = [0,0,0]
+		while sel.modifiers.count > 0 do (deleteModifier sel sel.modifiers.count)		
 	)
 )
