@@ -1,3 +1,4 @@
+--ChannelData morpherMidifierIndex channelindex
 --DetectVertexWhetherConsistent 
 fn  DVWC source target = (
 	(source != target) and (source != undefined ) and (superclassof target == GeometryClass)and(getNumVerts source.mesh) == (getNumVerts target.mesh)
@@ -13,7 +14,7 @@ fn TransferMesh source target = (
 	for i = 1 to (getNumVerts source.mesh)do(setVert source.mesh i (getVert targetShot.mesh i)	)
  	delete targetShot;
 	update source
-	redrawViews() ;
+	redrawViews() 
 )
 fn GetMorphers obj = (
 	results = #()	
@@ -211,8 +212,7 @@ fn TransferMorpherChannel Source Target ChannelName: ChannelData: pureMesh:false
 	)
 	return ChannelData
 )
-fn SnapShotToMorpherChannel _morpher refObj _channel Keyframes: MorpherChannelTargetsLimit:25 TangentType:#linear = (
-	 
+fn SnapShotToMorpherChannel _morpher refObj _channel Keyframes: MorpherChannelTargetsLimit:25 TangentType:#linear = (	 
 	if (superclassof refObj == GeometryClass )then(
  		intervalCount = 0;
 		start = animationrange.start as integer/ticksPerFrame
@@ -267,6 +267,20 @@ fn SnapShotToMorpherChannel _morpher refObj _channel Keyframes: MorpherChannelTa
 		messageBox (refObj as string+" needs geometry type and individual to achieve")
 	)
 )
+fn UniquifyChannels obj = (
+	morphers = GetMorphers obj
+	for m in morphers do (
+		for i = 1 to (WM3_NumberOfChannels m)do(
+			if (ChannelName==unsupplied or ChannelName==undefined)then(
+				if not(WM3_MC_HasData m c)do(result = #(m,c))
+			)else(
+				if  (matchpattern (WM3_MC_GetName m c) pattern:ChannelName)then(result = #(m,c))
+			)
+			if (result != undefined)do(exit;)
+		)
+	)
+)
+
 fn testChannlAnimation Keyframes: = (
 	target = at time 0 snapshot $
 	addModifier target (Morpher())
@@ -276,3 +290,34 @@ fn testChannlAnimation Keyframes: = (
 	select target
 	
 )
+fn MorpherChannelsProcess obj action = (
+	if isvalidnode obj then (
+		if classof obj.modifiers[obj.modifiers.count] == morpher then (
+			m = obj.modifiers[obj.modifiers.count]
+			for i = 1 to (WM3_NumberOfChannels m) do (
+				if WM3_MC_HasData m i do action obj m i
+			)
+		)else MessageBox "First modifier is not morpher ! "
+	)else MessageBox "Invalid Object ! "
+)
+fn FixMorpherChannels obj = (
+	MorpherChannelsProcess obj (fn _ obj m i = (
+		WM3_MC_SetValue m i (100 as float)
+		redrawViews()
+		curShape = snapshot obj
+		curShape.name = WM3_MC_GetName m i
+-- 					curShape.pos = [i*10,0,0]					
+		WM3_MC_BuildFromNode m i curShape					
+		WM3_MC_SetValue m i (0 as float)
+		delete curShape
+		redrawViews()
+	))
+)
+fn ReNameChannelsByOrder obj = (
+	MorpherChannelsProcess obj (fn _ obj m i = (
+		print (WM3_MC_GetName m i)
+	))
+)
+
+
+

@@ -1,0 +1,60 @@
+fn GetAllChildren target filterType: = ( result = #()
+	if (isValidObj target)do(
+		join result target.children
+		for child in target.children do ( result = join result (GetAllChildren child) )
+	)		
+	result
+)
+fn GetRoot node = ( if isvalidnode node and isvalidnode node.parent then getRoot node.parent else node  )
+
+
+fn IsDescendant = (
+	
+)
+fn GetParents target = (
+	result = #()
+	if (target.parent != undefined)do(
+		append result target.parent
+		result = join result (GetParents target.parent)
+	)
+	result	
+)
+fn IsAncestor target obj = (
+	return ((findItem (GetParents target) obj ) != 0)
+)
+fn SortByHierarchy = (
+	objs = getCurrentSelection()	
+	for i = 1 to objs.count do (
+		for o = 1 to (objs.count-i) do (
+			if (IsAncestor objs[o] objs[o + 1])do( swap objs[o] objs[o + 1])
+		)
+	)
+	objs
+)
+fn BubbleSort nums = (
+	for i = 1 to nums.count do (
+		for o = 1 to (nums.count-i) do (
+			if (nums[o] > nums[o + 1])do( swap nums[o] nums[o + 1])
+		)
+	)
+)
+
+
+
+fn SelectAll IgnoreCase = (
+	if (IgnoreCase) then ( select $* )
+	else ( max select all )
+)
+fn SelectByNameContainWith txt = ( execute ("select $"+txt+"*") )
+fn SelectByType type IgnoreCase:false = (
+	if (type != undefined) do (
+		SelectAll IgnoreCase
+		results = #()
+		for obj in selection do (		if ((classof obj) == type)do( append results obj )	)
+		select results
+	)
+)
+fn SelectBoneGeometryObjects = (SelectByType BoneGeometry)
+
+
+

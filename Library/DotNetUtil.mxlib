@@ -122,24 +122,29 @@ fn LoadDotNetClass classname DllName: curLocation: prompt:true = (
 	)
 	result
 )
-fn ShowSelectFilesDialog title InitialPath:sysinfo.currentdir Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: = (
-	if (FileOK != unsupplied)do(
-		DialogClass = "System.Windows.Forms.OpenFileDialog"
-		if (DialogStyle == #Save)do( DialogClass = "System.Windows.Forms.SaveFileDialog" )
-		theDialog = dotNetObject DialogClass			
-		theDialog.title = title
-		theDialog.InitialDirectory = getfilenamepath InitialPath
-		theDialog.CheckFileExists = ShowCheckWarrn
-		theDialog.CheckPathExists = ShowCheckWarrn
-		theDialog.RestoreDirectory = false
-		AdditionalfilterString = ""
-		for item in types do ( AdditionalfilterString += (toUpper item) + " Files (*."+ (toLower item)+")|*."+(toLower item)+"|" )
-		theDialog.fileName = getfilenamefile InitialPath
-		theDialog.Filter = AdditionalfilterString+"All Files (*.*)|*.*"
-		theDialog.FilterIndex = 0
-		dotNet.addEventHandler theDialog "FileOK" FileOK
-		theDialog.showDialog()
+fn ShowSelectFilesDialog title InitialPath: Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: RestoreDirectory:false Multiselect:false = (
+	results = undefined
+	DialogClass = "System.Windows.Forms.OpenFileDialog"
+	if (DialogStyle == #Save)do( DialogClass = "System.Windows.Forms.SaveFileDialog" )
+	dialog = dotNetObject DialogClass			
+	dialog.title = title
+	if InitialPath != unsupplied do dialog.InitialDirectory = getfilenamepath InitialPath
+	dialog.CheckFileExists = ShowCheckWarrn
+	dialog.CheckPathExists = ShowCheckWarrn
+	dialog.RestoreDirectory = RestoreDirectory
+	dialog.Multiselect = Multiselect
+	AdditionalfilterString = ""
+	for item in types do (
+		if item[1] == "." do item = substring item 2 item.count
+		AdditionalfilterString += (toUpper item) + " Files (*."+ (toLower item)+")|*."+(toLower item)+"|" 
 	)
+	dialog.Filter = AdditionalfilterString+"All Files (*.*)|*.*"
+	dialog.FilterIndex = 0
+	if (FileOK != unsupplied)do(
+		dotNet.addEventHandler dialog "FileOK" FileOK
+	)
+	dialog.showDialog()
+	dialog.FileNames
 )
 fn GetDotNetMaxForeColor = (
 		result = ( ( colorman.getColor #text )*255 ) as color
