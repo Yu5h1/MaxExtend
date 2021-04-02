@@ -92,7 +92,8 @@ fn LoadDll dllpath prompt:true = (
 	)
 	LoadSucceed
 )
-fn ScanningLoadDll name curLocation: previouseLocation: searchpattern:"*" Recursively:false scanning:false prompt:true = ( result = undefined
+fn ScanningLoadDll name curLocation: previouseLocation: searchpattern:"*" Recursively:false scanning:false prompt:true = (
+	result = undefined
 	if (curLocation == unsupplied)do (curLocation = getfilenamepath (getThisScriptFilename()) )
 	if (curLocation[curLocation.count] != "\\" ) do ( curLocation += "\\")		
 	if ( doesFileExist (curLocation + name) )then( result = curLocation + name )else(
@@ -122,17 +123,20 @@ fn LoadDotNetClass classname DllName: curLocation: prompt:true = (
 	)
 	result
 )
-fn ShowSelectFilesDialog title InitialPath: Types:#() ShowCheckWarrn:false DialogStyle:#Open FileOK: RestoreDirectory:false Multiselect:false = (
+fn ShowSelectFilesDialog title InitialPath: Types:#() ShowCheckWarn:false DialogStyle:#Open FileOK: RestoreDirectory:false Multiselect:false = (
 	results = undefined
 	DialogClass = "System.Windows.Forms.OpenFileDialog"
 	if (DialogStyle == #Save)do( DialogClass = "System.Windows.Forms.SaveFileDialog" )
 	dialog = dotNetObject DialogClass			
 	dialog.title = title
-	if InitialPath != unsupplied do dialog.InitialDirectory = getfilenamepath InitialPath
-	dialog.CheckFileExists = ShowCheckWarrn
-	dialog.CheckPathExists = ShowCheckWarrn
+	if InitialPath != unsupplied do (
+		dialog.InitialDirectory = getfilenamepath InitialPath		
+		dialog.fileName = getFilenameFile InitialPath
+	)
+	dialog.CheckFileExists = ShowCheckWarn
+	dialog.CheckPathExists = ShowCheckWarn
 	dialog.RestoreDirectory = RestoreDirectory
-	dialog.Multiselect = Multiselect
+	if hasProperty dialog "Multiselect" do dialog.Multiselect = Multiselect
 	AdditionalfilterString = ""
 	for item in types do (
 		if item[1] == "." do item = substring item 2 item.count
@@ -157,17 +161,17 @@ fn GetDotNetMaxBackColor = (
 		result
 )
 
-fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.Standard = (
+fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false = (
+				
 	if (backcolor == unsupplied) do ( backcolor = GetDotNetMaxBackColor() )
 	if (forecolor == unsupplied) do ( forecolor = GetDotNetMaxForeColor() )
 	if (classof dnControls != Array)do( dnControls = #(dnControls) )
 	for c in dnControls do (
-		if (c == dotNetObject or classof c == dotNetControl)then(
+		if (classof c == dotNetObject or classof c == dotNetControl)then(		
 			 --and (c.gettype()).IsSubclassOf WinFormControl 
--- 			print c.name
 			if (hasProperty c "backcolor")do(c.backcolor = backcolor)
 			if (hasProperty c "forecolor")do( c.forecolor = forecolor)			
-			if (hasProperty c "FlatStyle")do( c.FlatStyle = FlatStyle; )
+			
 			if (Children and c.Controls.count > 0)do(
 				LastIndex = c.Controls.count-1;
 				for i = 0 to LastIndex do( SetDotNetControlColor c.Controls.item[i] Children:Children )
@@ -176,7 +180,7 @@ fn SetDotNetControlColor dnControls backcolor: forecolor: Children:false FlatSty
 		)
 	)
 )
-fn SetRolloutDotNetControlsColor target  backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.System = ( for c in target.controls do ( if (classof c == dotNetControl) do (SetDotNetControlColor c backcolor:backcolor forecolor:forecolor Children:true FlatStyle:FlatStyle) ) )
+fn SetRolloutDotNetControlsColor target  backcolor: forecolor: Children:false FlatStyle:dnFlatStyle.standard = ( for c in target.controls do ( if (classof c == dotNetControl) do (SetDotNetControlColor c backcolor:backcolor forecolor:forecolor Children:true FlatStyle:FlatStyle) ) )
 fn SelectFolderDialog hwnd InitialPath:sysinfo.currentdir = (
 	if (classof hwnd == RolloutClass)do(hwnd = hwnd.hwnd)
 	result = ""

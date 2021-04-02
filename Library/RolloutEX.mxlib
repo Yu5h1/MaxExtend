@@ -36,46 +36,48 @@ struct subParamData
 	key,
 	value
 )
-fn Quotes val = (("\""+val+"\""))
-fn ConvertToValidUIName name = (
-	name = name as string
-	numbers = "0123456789"
-	for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
--- 	invalidUIName " :;'@#~[{}]|!�$%^&*()-=+\\,<.>//?";
-	name =  substituteString name " " "_"
-	name =  substituteString name ":" "Cl"
-	name =  substituteString name ";" "sm"
-	name =  substituteString name "'" "sq"
-	name =  substituteString name "@" "ms"
-	name =  substituteString name "#" "hs"
-	name =  substituteString name "~" "td"
-	name =  substituteString name "[" "osb"
-	name =  substituteString name "{" "ocb"
-	name =  substituteString name "}" "ccb"
-	name =  substituteString name "]" "csb"
-	name =  substituteString name "|" "pp"
-	name =  substituteString name "!" "ex"
-	name =  substituteString name "�" "pd"
-	name =  substituteString name "$" "dl"
-	name =  substituteString name "%" "pc"
-	name =  substituteString name "^" "or"
-	name =  substituteString name "&" "ad"
-	name =  substituteString name "*" "st"
-	name =  substituteString name "(" "bk"
-	name =  substituteString name ")" "bk"
-	name =  substituteString name "-" "ms"
-	name =  substituteString name "=" "eq"
-	name =  substituteString name "+" "ps"
-	name =  substituteString name "\\" "sl"
-	name =  substituteString name "," "cm"
-	name =  substituteString name "<" "lt"
-	name =  substituteString name "." "dt"
-	name =  substituteString name ">" "mt"
-	name =  substituteString name "//" "sl"
-	name =  substituteString name "?" "qm"
-	name =  substituteString name "\"" "qt"
-	return name;
-)
+	fn Quotes val = (("\""+val+"\""))
+	fn ConvertToValidUIName name = (
+		name = name as string
+		numbers = "0123456789"
+		for i=1 to numbers.count where matchpattern numbers[i] pattern:name[1] do ( name = "_" + name; )
+	-- 	invalidUIName " :;'@#~[{}]|!�$%^&*()-=+\\,<.>//?";
+		name =  substituteString name " " "_"
+		name =  substituteString name ":" "Cl"
+		name =  substituteString name ";" "sm"
+		name =  substituteString name "'" "sq"
+		name =  substituteString name "@" "ms"
+		name =  substituteString name "#" "hs"
+		name =  substituteString name "~" "td"
+		name =  substituteString name "[" "osb"
+		name =  substituteString name "{" "ocb"
+		name =  substituteString name "}" "ccb"
+		name =  substituteString name "]" "csb"
+		name =  substituteString name "|" "pp"
+		name =  substituteString name "!" "ex"
+		name =  substituteString name "�" "pd"
+		name =  substituteString name "$" "dl"
+		name =  substituteString name "%" "pc"
+		name =  substituteString name "^" "or"
+		name =  substituteString name "&" "ad"
+		name =  substituteString name "*" "st"
+		name =  substituteString name "(" "bk"
+		name =  substituteString name ")" "bk"
+		name =  substituteString name "-" "ms"
+		name =  substituteString name "=" "eq"
+		name =  substituteString name "+" "ps"
+		name =  substituteString name "\\" "sl"
+		name =  substituteString name "," "cm"
+		name =  substituteString name "<" "lt"
+		name =  substituteString name "." "dt"
+		name =  substituteString name ">" "mt"
+		name =  substituteString name "//" "sl"
+		name =  substituteString name "?" "qm"
+		name =  substituteString name "\"" "qt"
+		name
+	)
+	
+
 struct RolloutEX
 (
 	public
@@ -184,7 +186,7 @@ struct RolloutEX
 		if (args!= unsupplied)do(str += " "+args)
 		str += " = (\n"+method+"\n)"
 	),
-	fn  HorizontalComposition controls pos =
+	fn HorizontalComposition controls pos =
 	(
 		curPosX = pos.x;
 		for i = 1 to controls.count do (

@@ -1,8 +1,13 @@
-fn GetAllChildren target filterType: = ( result = #()
-	if (isValidObj target)do(
-		join result target.children
-		for child in target.children do ( result = join result (GetAllChildren child) )
-	)		
+fn GetAllChildren target filterMethod: ignoreHidden:true = (	
+	result = #()	
+	if (isValidObj target )do(
+		for child in target.children do (
+			if not (child.ishidden and ignoreHidden) do (
+				append result child
+			)
+			result = join result (GetAllChildren child) 
+		)
+	)
 	result
 )
 fn GetRoot node = ( if isvalidnode node and isvalidnode node.parent then getRoot node.parent else node  )

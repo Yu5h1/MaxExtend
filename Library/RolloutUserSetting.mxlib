@@ -1,0 +1,63 @@
+-- Local ConfigPath  = 
+fn GetConfigPath  = ( getdir #plugcfg+"\\"+this.title+@".ini" )
+fn SetUserData name val = (	
+	if SuperClassOf name == RolloutControl do name = name.name
+	setINISetting (GetConfigPath()) "UserSetting" name (val as string)
+)
+fn GetUserData name default:"" evaluate:false = (	
+	if SuperClassOf name == RolloutControl do name = name.name	
+	result = getINISetting (GetConfigPath()) "UserSetting" name
+	if evaluate do (
+		result = try ( execute result ) catch( default )
+		if classof result != classOf default do result = default
+	)
+	if result  == "" do result = default
+	result
+)
+
+fn LoadAllControlsSetting = (
+	for c in this.controls do (
+		
+		if (isProperty c "value") do c.value = GetUserData (c.name+".value") default:0.0 evaluate:true
+		case (classOf c) of (
+			AngleControl:c.degrees = (GetUserData (c.name+".degrees") default:0.0 evaluate:true )
+			CheckBoxControl:c.checked = (GetUserData (c.name+".checked") default:false evaluate:true )
+			ColorPickerControl:c.color = (GetUserData (c.name+".color") default:Black evaluate:true )
+			ListBoxControl:(
+				c.selection = (GetUserData (c.name+".Selection") default:1 evaluate:true )
+			)
+			EditTextControl:c.text = GetUserData (c.name+".Text")
+-- 			ComboBoxControl:
+-- 			RadioControl:
+-- 			BitmapControl:
+-- 			ImgTag:
+-- 			SubRollout:
+-- 			MAXCurveCtl:
+		)	
+	)
+)
+fn SaveAllControlsSetting = (
+	for c in this.controls do (
+		if isProperty c "value" do SetUserData (c.name+".value") c.value
+		case (classOf c) of (
+			AngleControl:SetUserData (c.name+".degrees") c.degrees
+			CheckBoxControl:SetUserData (c.name+".checked") c.checked
+			ColorPickerControl:SetUserData (c.name+".color") c.color
+			ListBoxControl:(
+				SetUserData (c.name+".Selection") c.selection
+			)
+			EditTextControl:SetUserData (c.name+".Text") c.text
+-- 			ComboBoxControl:
+
+-- 			RadioControl:
+-- 			BitmapControl:
+-- 			ImgTag:
+-- 			SubRollout:
+-- 			MAXCurveCtl:
+		)	
+	)
+)
+fn DeleteRolloutSetting = (
+	configPath = GetConfigPath()
+	if doesFileExist configPath do DeleteFile configPath
+)

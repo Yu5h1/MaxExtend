@@ -1,0 +1,6 @@
+fn ChangeExtension inputPath replacewith = (
+	((getFilenamePath inputPath)+(getFilenameFile inputPath)+"."+(trimLeft replacewith "."))
+)
+fn ChangeFileName inputPath replacewith = (
+	((getFilenamePath inputPath)+replacewith+(getFilenameType inputPath)) 
+)
