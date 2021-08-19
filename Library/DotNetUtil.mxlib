@@ -31,7 +31,7 @@ fn CompileCSharp path &Assembly: = ( result = undefined
 	)
 	result
 	
-)dotNet.loadAssembly
+) --dotNet.loadAssembly
 	--XML
 Local XmlConvert = dotnetclass "System.Xml.XmlConvert"
 fn IsValidXMLName txt = ( try( XmlConvert.VerifyName txt;true )catch( false ) )

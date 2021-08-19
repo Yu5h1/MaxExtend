@@ -7,3 +7,9 @@ fn ShowInExplorer path = (
 		)
 	)
 )
+fn Launch exePath args donotwait:false  = (
+	cmd = filenameFromPath exePath
+	for arg in args do cmd+= " \""+(arg as string)+"\""
+	HiddenDOSCommand cmd startpath:(getfilenamepath exePath) donotwait:donotwait exitcode:&exitcode
+	exitcode
+)

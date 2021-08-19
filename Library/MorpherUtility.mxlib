@@ -290,15 +290,20 @@ fn testChannlAnimation Keyframes: = (
 	select target
 	
 )
-fn MorpherChannelsProcess obj action = (
+fn MorpherChannelsProcess obj action val: = (
 	if isvalidnode obj then (
 		if classof obj.modifiers[obj.modifiers.count] == morpher then (
 			m = obj.modifiers[obj.modifiers.count]
 			for i = 1 to (WM3_NumberOfChannels m) do (
-				if WM3_MC_HasData m i do action obj m i
+				if WM3_MC_HasData m i do action obj m i val:val
 			)
 		)else MessageBox "First modifier is not morpher ! "
 	)else MessageBox "Invalid Object ! "
+)
+fn ReplaceChannelsName obj searchfor replaceWith = (
+	MorpherChannelsProcess obj (fn _ obj m i val: = (
+		WM3_MC_SetName m i (substituteString  (WM3_MC_GetName m i) val[1] val[2])
+	)) val:#(searchfor,replaceWith)
 )
 fn FixMorpherChannels obj = (
 	MorpherChannelsProcess obj (fn _ obj m i = (
@@ -318,6 +323,3 @@ fn ReNameChannelsByOrder obj = (
 		print (WM3_MC_GetName m i)
 	))
 )
-
-
-
