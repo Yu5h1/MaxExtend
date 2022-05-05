@@ -1,0 +1,3 @@
+fn AlignRotation = (
+	in coordsys Local $.rotation *= $.transform.rotation * (inverse hkb.transform.rotation)
+)
